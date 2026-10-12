@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Brief to Backlog: AI-assisted requirements analysis and delivery planning. Turn stakeholder notes into a scoped, prioritised delivery plan.">
+<title>Brief to Backlog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F5F6; --surface:#FFFFFF; --sunken:#EEF0F2; --ink:#17212B; --muted:#5F6B76; --faint:#8A949D; --line:#DCE1E5;
+  --accent:#0F5F5C; --accent-ink:#FFFFFF; --accent-soft:#E3EFEE;
+  --p-must:#0F5F5C; --p-should:#5C9C97; --p-could:#B3D3D0;
+  --weekend:rgba(23,33,43,.04); --danger:#B42318; --ok:#1F7A45;
+  --font:"IBM Plex Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --paper:#101518; --surface:#171E23; --sunken:#1D252B; --ink:#E4E9EC; --muted:#9AA6AF; --faint:#76828B; --line:#2A343B;
+  --accent:#4FB3AA; --accent-ink:#082220; --accent-soft:#18302E;
+  --p-must:#4FB3AA; --p-should:#337A74; --p-could:#24504C;
+  --weekend:rgba(255,255,255,.03); --danger:#F97066; --ok:#4ADE80;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#101518; --surface:#171E23; --sunken:#1D252B; --ink:#E4E9EC; --muted:#9AA6AF; --faint:#76828B; --line:#2A343B;
+  --accent:#4FB3AA; --accent-ink:#082220; --accent-soft:#18302E;
+  --p-must:#4FB3AA; --p-should:#337A74; --p-could:#24504C;
+  --weekend:rgba(255,255,255,.03); --danger:#F97066; --ok:#4ADE80;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.55;padding-inline:16px;padding-block:0 40px;font-variant-numeric:tabular-nums}
+.wrap{max-width:1100px;margin:0 auto}
+h1,h2,h3,h4,p{margin:0}
+h1,h2,h3{text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* type scale: 24 / 17 / 14 / 13 / 12 */
+.label{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-block:24px 20px}
+.brand h1{font-size:24px;font-weight:600;letter-spacing:-.01em}
+.brand p{color:var(--muted);font-size:14px;margin-top:2px}
+
+/* controls */
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:500;font-size:14px;line-height:1.3}
+.btn:hover{border-color:var(--faint)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=text],input[type=date],input[type=number],select,textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:14px}
+textarea{resize:vertical;line-height:1.55}
+select{cursor:pointer}
+.field{display:grid;gap:6px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:500}
+.status{font-size:13px;color:var(--muted);min-height:20px}
+.status.err{color:var(--danger)}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.card-h h2{font-size:15px;font-weight:600}
+.card-b{padding:18px}
+
+/* input area */
+.input{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px}
+@media (max-width:820px){.input{grid-template-columns:1fr}}
+.preview{font-size:13px;color:var(--muted);background:var(--sunken);border-radius:6px;padding:10px 12px;white-space:pre-line;max-height:132px;overflow:auto}
+#ownNotes{min-height:132px}
+.hint{font-size:12px;color:var(--faint)}
+
+/* results */
+.results{margin-top:28px}
+.res-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:12px}
+.res-head h2{font-size:17px;font-weight:600}
+.tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 8px;background:var(--surface)}
+nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);z-index:10}
+nav.tabs button{border:0;background:none;padding:10px 14px;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:500}
+nav.tabs .count{font-size:12px;color:var(--faint);margin-left:4px}
+.pane{padding-top:20px}
+.toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.toolbar p{font-size:13px;color:var(--muted);max-width:70ch}
+
+/* brief */
+.brief{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.brief{grid-template-columns:1fr}}
+.sec{padding:18px;border-top:1px solid var(--line);display:grid;gap:12px}
+.sec:first-child{border-top:0}
+.sec h3{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:620px){.two,.three{grid-template-columns:1fr}}
+table{border-collapse:collapse;width:100%}
+th{font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+tr:last-child td{border-bottom:0}
+.scope td:first-child{width:40px;color:var(--faint);font-size:13px}
+.scope .nm{font-weight:500}
+.scope .ds{font-size:13px;color:var(--muted)}
+.scope select{width:150px;font-size:13px;padding:5px 8px}
+.team td{padding:6px 10px;vertical-align:middle}
+.team input[type=number]{width:72px}
+.idea{display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;padding:8px 0;cursor:pointer}
+.idea input{margin-top:4px;accent-color:var(--accent)}
+.idea .ds{font-size:13px;color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:6px;padding:12px 14px;font-size:13px;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-weight:500}
+
+/* priority marks: one hue, three strengths */
+.prio{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}
+.prio i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.prio.must i{background:var(--p-must)} .prio.should i{background:var(--p-should)} .prio.could i{background:var(--p-could)} .prio.wont i{background:transparent;border:1px solid var(--faint)}
+
+/* questions */
+.qs{position:sticky;top:56px}
+@media (max-width:860px){.qs{position:static}}
+.qs.blocking{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.q{padding:12px 18px;border-top:1px solid var(--line);display:grid;gap:6px}
+.q p{font-weight:500;font-size:14px}
+.q small{font-size:12px;color:var(--muted)}
+.qs .foot{padding:14px 18px;border-top:1px solid var(--line);display:grid;gap:8px}
+details.conf summary{cursor:pointer;font-size:13px;color:var(--muted);padding:12px 18px;border-top:1px solid var(--line)}
+details.conf .q p{font-weight:400}
+
+/* stories */
+.group{margin-bottom:24px}
+.group-h{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:10px}
+.group-h h3{font-size:15px;font-weight:600}
+.group-h .id{font-size:13px;color:var(--faint)}
+.story{padding:14px 18px;border-top:1px solid var(--line)}
+.story:first-child{border-top:0}
+.story .meta{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--faint);margin-bottom:4px}
+.story .st b{font-weight:600}
+.ac{margin-top:10px;width:100%;table-layout:fixed}
+.ac th{padding:6px 8px;font-size:11px;background:var(--sunken);border-bottom:0}
+.ac td{padding:6px 8px;font-size:13px;border-bottom:1px solid var(--line)}
+.ac-wrap{overflow-x:auto}
+.ac-wrap .ac{min-width:520px}
+
+/* tasks */
+.tasks td{vertical-align:middle}
+.tasks td.cb{width:34px}
+.tasks input{accent-color:var(--accent);width:15px;height:15px}
+.tasks tr.done .tn{text-decoration:line-through;color:var(--faint)}
+.tasks .tn{font-weight:500}
+.tasks .ft{font-size:13px;color:var(--muted)}
+.tasks td.r{text-align:right;white-space:nowrap}
+.tasks tr.ph td{background:var(--sunken);font-weight:600;font-size:13px;padding:8px 10px}
+.stake{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:0 5px;margin-left:6px;font-weight:400;white-space:nowrap}
+.tasks-wrap{overflow-x:auto}
+.tasks-wrap table{min-width:640px}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}
+.metric{padding:12px 16px;border-left:1px solid var(--line)}
+.metric:first-child{border-left:0}
+.metric .v{font-size:17px;font-weight:600;margin-top:2px}
+.metric .s{font-size:12px;color:var(--muted)}
+.v.bad{color:var(--danger)} .v.good{color:var(--ok)}
+@media (max-width:700px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric:nth-child(3){border-left:0}.metric:nth-child(n+3){border-top:1px solid var(--line)}}
+
+/* gantt */
+.gscroll{overflow-x:auto}
+.gantt{position:relative;min-width:max-content}
+.grow{display:flex;min-height:32px;position:relative;z-index:1;border-bottom:1px solid var(--line)}
+.grow:last-child{border-bottom:0}
+.glabel{position:sticky;left:0;z-index:3;width:240px;flex:0 0 240px;background:var(--surface);padding:6px 14px;font-size:13px;border-right:1px solid var(--line);display:flex;align-items:center;min-width:0}
+.glabel span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grow.fh .glabel{font-weight:600;background:var(--sunken)}
+.grow.fh{background:var(--sunken)}
+.grow.head .glabel{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.gtrack{position:relative;flex:0 0 auto}
+.tick{position:absolute;top:0;bottom:0;font-size:12px;color:var(--muted);padding:7px 0 0 5px;border-left:1px solid var(--line);white-space:nowrap}
+.bar{position:absolute;top:10px;height:12px;border-radius:2px}
+.bar.must{background:var(--p-must)} .bar.should{background:var(--p-should)} .bar.could{background:var(--p-could)}
+.bar.stake{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.45) 0 3px,transparent 3px 6px)}
+.blab{position:absolute;top:7px;font-size:12px;color:var(--muted);white-space:nowrap}
+.goverlay{position:absolute;top:0;bottom:0;z-index:0;pointer-events:none}
+.wk{position:absolute;top:0;bottom:0;background:var(--weekend)}
+.dl{position:absolute;top:0;bottom:0;border-left:1.5px dashed var(--danger);z-index:2}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--muted);padding:12px 14px;border-top:1px solid var(--line)}
+.legend i{display:inline-block;width:12px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
+.export{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}
+pre.copy{width:100%;max-height:200px;overflow:auto;background:var(--sunken);padding:10px;border-radius:6px;font-size:12px;white-space:pre-wrap;margin:0}
+.blank{padding:32px 18px;text-align:center;color:var(--muted);font-size:14px}
+.blank b{display:block;color:var(--ink);font-weight:600;margin-bottom:4px}
+footer.site{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--faint);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Brief to Backlog</h1>
+      <p>AI-assisted requirements analysis and delivery planning.</p>
+    </div>
+    <button class="btn primary" id="btnPlanTop" hidden>Download plan</button>
+  </header>
+
+  <section class="input" aria-label="Input">
+    <div class="card">
+      <div class="card-h"><h2>Sample scenario</h2></div>
+      <div class="card-b" style="display:grid;gap:12px">
+        <div class="field"><label class="label" for="scenSel">Scenario</label><select id="scenSel"></select></div>
+        <div class="preview" id="scenPreview"></div>
+        <div class="btns"><button class="btn" id="btnSample">Load sample plan</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Your own notes</h2><span class="hint">Live AI · Gemini</span></div>
+      <div class="card-b" style="display:grid;gap:12px">
+        <label class="label" for="ownNotes" hidden>Meeting notes</label>
+        <textarea id="ownNotes" spellcheck="false" maxlength="4000" placeholder="Paste rough notes from a stakeholder meeting: who needs what, pain points, deadlines, team size…"></textarea>
+        <div class="btns">
+          <button class="btn primary" id="btnAnalyse">Analyse with AI</button>
+          <button class="btn" id="btnStop" hidden>Stop</button>
+          <span class="hint" id="charCount"></span>
+        </div>
+        <p class="hint">Uses Google's Gemini API free tier: usage is limited and inputs may be used by Google to improve its products. Don't paste confidential information.</p>
+      </div>
+    </div>
+  </section>
+  <div class="status" id="status" role="status" style="margin-top:10px"></div>
+
+  <section class="results" id="results" aria-label="Plan">
+    <div class="res-head"><h2 id="resTitle"></h2><span class="tag" id="resTag"></span></div>
+    <nav class="tabs" role="tablist" aria-label="Plan sections">
+      <button role="tab" id="tab-brief" data-tab="brief" aria-selected="true">Brief</button>
+      <button role="tab" id="tab-stories" data-tab="stories" aria-selected="false">User stories<span class="count" id="cStories"></span></button>
+      <button role="tab" id="tab-tasks" data-tab="tasks" aria-selected="false">Tasks<span class="count" id="cTasks"></span></button>
+      <button role="tab" id="tab-timeline" data-tab="timeline" aria-selected="false">Timeline</button>
+    </nav>
+
+    <div class="pane" id="pane-brief">
+      <div class="brief">
+        <div class="card" id="briefDoc"></div>
+        <aside class="card qs" id="qPanel"></aside>
+      </div>
+    </div>
+
+    <div class="pane" id="pane-stories" hidden>
+      <div class="toolbar">
+        <p>Each story names who benefits, what they need and why, with acceptance criteria that define done.</p>
+        <div class="seg" role="group" aria-label="Group stories by">
+          <button data-sv="feature" aria-pressed="true">By feature</button><button data-sv="stakeholder" aria-pressed="false">By stakeholder</button>
+        </div>
+      </div>
+      <div id="storiesOut"></div>
+    </div>
+
+    <div class="pane" id="pane-tasks" hidden>
+      <div class="toolbar"><p>Tasks grouped into delivery phases by priority. Dates come from the schedule; owners are delivery roles or stakeholders.</p></div>
+      <div id="tasksOut"></div>
+    </div>
+
+    <div class="pane" id="pane-timeline" hidden>
+      <div id="metricsOut"></div>
+      <div class="toolbar">
+        <p>Stakeholder tasks are hatched. Weekends are shaded; the dashed line is the deadline.</p>
+        <div class="seg" role="group" aria-label="Group timeline by">
+          <button data-gv="feature" aria-pressed="true">By feature</button><button data-gv="owner" aria-pressed="false">By owner</button>
+        </div>
+      </div>
+      <div id="ganttOut"></div>
+      <div class="export" id="exportRow">
+        <button class="btn primary" id="btnPlan">Download project plan</button>
+        <button class="btn" id="btnCopyList">Copy checklist</button>
+        <button class="btn" id="btnCopyCsv">Copy Jira CSV</button>
+        <span class="status" id="exportStatus"></span>
+        <pre class="copy" id="copyBox" hidden></pre>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site"><span>Brief to Backlog · Designed and built by Sophia Yeung</span><span>Live analysis powered by the Gemini API</span></footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const P={must:"Must have",should:"Should have",could:"Could have",wont:"Won't have"};
+const PHASE={must:"Phase 1 · Must have",should:"Phase 2 · Should have",could:"Backlog · Could have"};
+const RANK={must:0,should:1,could:2,wont:3};
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const prioMark=p=>`<span class="prio ${p}"><i></i>${P[p]}</span>`;
+
+/* ================= preset scenarios ================= */
+const WAREHOUSE_NOTES=`Warehouse manager says dispatch still runs off Excel, and nobody can tell which orders have been picked.
+Wants pickers to scan barcodes on their phones to confirm each pick.
+Manager wants to see how many orders are still outstanding each day.
+Might need to integrate with the courier's system later, but not urgent.
+Should warn the picker if they grab the wrong item.
+IT can spare about two people. Boss wants it live before year-end.`;
+const WAREHOUSE={
+  project:{name:"Warehouse Scan-to-Pick",goal:"Replace Excel-based pick tracking with mobile barcode scanning so every order's pick status is visible in real time and picking errors drop.",
+    users:["Picker","Warehouse manager"],painPoints:["Dispatch runs off Excel; no one knows which orders are picked","Wrong items are only caught after dispatch","Manager has no quick view of outstanding orders"],
+    startDate:"2026-10-05",deadline:"2026-11-27",team:[{role:"Business Analyst",count:1},{role:"Developer",count:1}]},
+  features:[
+    {id:"F1",name:"Scan-to-pick",description:"Pickers scan item barcodes on a phone to confirm picks and update order status",priority:"must",reason:"Core pain point; the system has no value without it"},
+    {id:"F2",name:"Wrong-item alert",description:"Instant warning when a scanned item doesn't belong to the order",priority:"should",reason:"Raised in the notes, but builds on scan-to-pick"},
+    {id:"F3",name:"Outstanding orders report",description:"Manager sees the count and list of orders not yet dispatched",priority:"should",reason:"Manager's request; a simple list is enough for v1"},
+    {id:"F4",name:"Courier integration",description:"Send dispatch data to the courier's system automatically",priority:"wont",reason:"Notes say explicitly it's not urgent"}],
+  ideas:[],confirmed:[],
+  assumptions:["Deadline taken as 27 Nov 2026 until confirmed","The two IT staff are one Business Analyst and one Developer","Existing orders can be exported from the current Excel file"],
+  questions:[
+    {id:"Q1",question:"Does \"before year-end\" mean 31 December, or before the Christmas shutdown?",why:"Sets the real deadline",answer:""},
+    {id:"Q2",question:"Do all stock items already have barcodes?",why:"If not, labelling becomes a prerequisite task",answer:""},
+    {id:"Q3",question:"Will pickers use company-issued or personal phones?",why:"Decides native app vs mobile web",answer:""},
+    {id:"Q4",question:"Should a wrong pick also notify the manager, or only the picker?",why:"Changes the scope of the alert feature",answer:""}],
+  stories:[
+    {id:"US-1",featureId:"F1",role:"picker",want:"to scan an item's barcode to confirm the pick",soThat:"I no longer have to update Excel by hand",
+      criteria:[{title:"Correct item scanned",given:"I'm picking order ORD-102 and the expected item is A123",when:"I scan A123",then:"the line is marked Picked and the quantity updates"}]},
+    {id:"US-2",featureId:"F1",role:"picker",want:"to see today's pick list when I open the app",soThat:"I know which order to work on next",
+      criteria:[{title:"View pick list",given:"there are 30 unpicked orders today",when:"I open the app",then:"the 30 orders are listed oldest first and completed orders are hidden"}]},
+    {id:"US-3",featureId:"F2",role:"picker",want:"an instant alert when I scan the wrong item",soThat:"I can fix it on the spot",
+      criteria:[{title:"Wrong item scanned",given:"the expected item is A123",when:"I scan B456",then:"a red \"Item doesn't match\" alert appears and the scan is not recorded"},
+                {title:"Over-pick",given:"the order needs 2 × A123",when:"I scan a third A123",then:"the app shows \"Quantity already met\" and does not count it"}]},
+    {id:"US-4",featureId:"F3",role:"warehouse manager",want:"to see how many orders haven't been dispatched today",soThat:"I can allocate staff",
+      criteria:[{title:"Outstanding count",given:"12 orders are picked but not dispatched and 8 are unpicked",when:"I open the report",then:"it shows \"20 outstanding\" and I can open the list"}]},
+    {id:"US-5",featureId:"F4",role:"warehouse manager",want:"dispatch data sent to the courier automatically",soThat:"nobody has to re-key it",
+      criteria:[{title:"Auto-send",given:"an order is picked and packed",when:"I mark it Dispatched",then:"the courier's system receives the shipment details"}]}],
+  tasks:[
+    {id:"T1",featureId:"F1",name:"Confirm barcode format and item data",days:2,owner:"Business Analyst",dependsOn:[]},
+    {id:"T2",featureId:"F1",name:"Design mobile scanning screens",days:3,owner:"Business Analyst",dependsOn:[]},
+    {id:"T3",featureId:"F1",name:"Build scanning and pick logging",days:6,owner:"Developer",dependsOn:[]},
+    {id:"T4",featureId:"F1",name:"Import existing order data",days:3,owner:"Developer",dependsOn:[]},
+    {id:"T5",featureId:"F1",name:"Run on-floor testing with pickers",days:3,owner:"Business Analyst",dependsOn:[]},
+    {id:"T6",featureId:"F1",name:"Train pickers",days:1,owner:"Warehouse manager",dependsOn:[]},
+    {id:"T7",featureId:"F2",name:"Define item-matching rules",days:1,owner:"Business Analyst",dependsOn:["T1"]},
+    {id:"T8",featureId:"F2",name:"Build wrong-item alert",days:3,owner:"Developer",dependsOn:["T3"]},
+    {id:"T9",featureId:"F2",name:"Test wrong-pick scenarios",days:2,owner:"Business Analyst",dependsOn:[]},
+    {id:"T10",featureId:"F3",name:"Confirm report fields with manager",days:1,owner:"Business Analyst",dependsOn:[]},
+    {id:"T11",featureId:"F3",name:"Build outstanding orders report",days:4,owner:"Developer",dependsOn:["T4"]},
+    {id:"T12",featureId:"F3",name:"Run manager UAT and sign-off",days:2,owner:"Warehouse manager",dependsOn:[]},
+    {id:"T13",featureId:"F4",name:"Assess courier API",days:2,owner:"Developer",dependsOn:[]},
+    {id:"T14",featureId:"F4",name:"Build dispatch data integration",days:5,owner:"Developer",dependsOn:[]}]
+};
+
+const HELP_NOTES=`IT team gets requests by email, Teams and people walking up to the desk. Things get lost and nobody knows who's handling what.
+Want one portal where staff log a ticket.
+Tickets should go straight to the right person based on category (hardware, access, software).
+Need to track response times. P1 should be picked up within 4 hours.
+IT manager wants a monthly report on volumes and SLA performance.
+Knowledge base for common fixes would be nice eventually.
+Three of us can work on it. Want it live by end of January.`;
+const HELPDESK={
+  project:{name:"IT Service Desk Portal",goal:"Give staff one place to log IT requests so every ticket is routed, tracked against SLA and reported on.",
+    users:["Staff member","IT support officer","IT manager"],painPoints:["Requests arrive by email, Teams and walk-ups and get lost","No visibility of who owns each request","No data on response times or volumes"],
+    startDate:"2026-11-02",deadline:"2027-01-29",team:[{role:"Business Analyst",count:1},{role:"Developer",count:2}]},
+  features:[
+    {id:"F1",name:"Ticket portal",description:"Staff log, view and update their own tickets in one place",priority:"must",reason:"Single intake channel is the core fix"},
+    {id:"F2",name:"Category routing",description:"Tickets are assigned automatically by category",priority:"must",reason:"Stated need; removes manual triage"},
+    {id:"F3",name:"SLA tracking and alerts",description:"Targets by priority with alerts before a breach",priority:"should",reason:"P1 target stated; other levels still to define"},
+    {id:"F4",name:"Monthly service report",description:"Volumes and SLA performance for the IT manager",priority:"should",reason:"Manager's request; can follow go-live"},
+    {id:"F5",name:"Self-service knowledge base",description:"Articles for common fixes",priority:"wont",reason:"Notes say eventually"}],
+  ideas:[],confirmed:[],
+  assumptions:["The three people are one Business Analyst and two Developers","Staff sign in with existing Microsoft 365 accounts","Schedule does not account for the Christmas shutdown"],
+  questions:[
+    {id:"Q1",question:"What are the response targets for P2 to P4?",why:"Needed to configure SLA tracking",answer:""},
+    {id:"Q2",question:"Who owns each category, and is there a fallback when they're away?",why:"Defines routing rules",answer:""},
+    {id:"Q3",question:"Should email requests be converted into tickets automatically?",why:"Adds an integration task if yes",answer:""},
+    {id:"Q4",question:"Is the Christmas shutdown excluded from the timeline?",why:"May push the forecast finish past January",answer:""}],
+  stories:[
+    {id:"US-1",featureId:"F1",role:"staff member",want:"to log an IT request through a single form",soThat:"I don't have to chase people on email or Teams",
+      criteria:[{title:"Submit a ticket",given:"I'm signed in and my laptop won't connect to Wi-Fi",when:"I submit a ticket with category Hardware",then:"I get a ticket number and its status shows as New"}]},
+    {id:"US-2",featureId:"F1",role:"staff member",want:"to see the status of my open tickets",soThat:"I know whether someone is working on them",
+      criteria:[{title:"View my tickets",given:"I have 2 open tickets",when:"I open My tickets",then:"both are listed with status, assignee and last update"}]},
+    {id:"US-3",featureId:"F2",role:"IT support officer",want:"tickets in my category assigned to me automatically",soThat:"nothing waits in a shared inbox",
+      criteria:[{title:"Route by category",given:"I own the Access category",when:"a staff member logs an Access ticket",then:"it's assigned to me within 1 minute and I get a notification"}]},
+    {id:"US-4",featureId:"F3",role:"IT support officer",want:"an alert before a ticket breaches its SLA",soThat:"I can act in time",
+      criteria:[{title:"P1 warning",given:"a P1 ticket was logged 3 hours ago and is not yet picked up",when:"the 3-hour mark passes",then:"the assignee and IT manager receive an alert"}]},
+    {id:"US-5",featureId:"F4",role:"IT manager",want:"a monthly report of ticket volumes and SLA results",soThat:"I can report service performance",
+      criteria:[{title:"Monthly report",given:"it's the first business day of the month",when:"I open Reports",then:"I see last month's volumes by category and the % of tickets within SLA"}]},
+    {id:"US-6",featureId:"F5",role:"staff member",want:"to search for fixes to common problems",soThat:"I can solve simple issues myself",
+      criteria:[{title:"Search articles",given:"an article exists for printer setup",when:"I search for printer",then:"the article appears in the results"}]}],
+  tasks:[
+    {id:"T1",featureId:"F1",name:"Confirm ticket fields and categories",days:2,owner:"Business Analyst",dependsOn:[]},
+    {id:"T2",featureId:"F1",name:"Design portal screens",days:3,owner:"Business Analyst",dependsOn:[]},
+    {id:"T3",featureId:"F1",name:"Build ticket submission and status views",days:7,owner:"Developer",dependsOn:[]},
+    {id:"T4",featureId:"F1",name:"Pilot with one department",days:3,owner:"Business Analyst",dependsOn:[]},
+    {id:"T5",featureId:"F2",name:"Define routing rules with team leads",days:2,owner:"IT manager",dependsOn:["T1"]},
+    {id:"T6",featureId:"F2",name:"Build auto-assignment and notifications",days:4,owner:"Developer",dependsOn:["T3"]},
+    {id:"T7",featureId:"F2",name:"Test routing scenarios",days:2,owner:"IT support officer",dependsOn:[]},
+    {id:"T8",featureId:"F3",name:"Agree SLA targets by priority",days:1,owner:"IT manager",dependsOn:[]},
+    {id:"T9",featureId:"F3",name:"Build SLA timers and breach alerts",days:4,owner:"Developer",dependsOn:["T6"]},
+    {id:"T10",featureId:"F3",name:"Test SLA alerts",days:2,owner:"Business Analyst",dependsOn:[]},
+    {id:"T11",featureId:"F4",name:"Confirm report metrics with IT manager",days:1,owner:"Business Analyst",dependsOn:[]},
+    {id:"T12",featureId:"F4",name:"Build monthly service report",days:4,owner:"Developer",dependsOn:["T9"]},
+    {id:"T13",featureId:"F4",name:"Review first report",days:1,owner:"IT manager",dependsOn:[]},
+    {id:"T14",featureId:"F5",name:"Draft top 10 help articles",days:4,owner:"IT support officer",dependsOn:[]},
+    {id:"T15",featureId:"F5",name:"Build article search",days:3,owner:"Developer",dependsOn:[]}]
+};
+
+const TORCH_NOTES=`Sales meeting. Boss wants torch sales up 40% by year-end.
+Last year's Christmas numbers were flat.
+Marketing can help. Not sure about budget yet.`;
+const TORCH1={
+  project:{name:"Torch Sales Growth",goal:"Increase torch sales by 40% by year-end.",users:[],painPoints:["Last year's Christmas sales were flat"],startDate:"2026-10-05",deadline:"2026-12-31",team:[{role:"Team member",count:2}]},
+  features:[],
+  ideas:[
+    {name:"Online store refresh",description:"Improve torch product pages and checkout conversion",selected:true},
+    {name:"Retail bundle promotion",description:"Bundle torches with batteries at key retailers for Christmas",selected:true},
+    {name:"Past-customer email campaign",description:"Target previous buyers with a seasonal offer",selected:false},
+    {name:"Marketplace listings",description:"List the range on major online marketplaces",selected:false}],
+  confirmed:[],assumptions:["Deadline taken as 31 Dec 2026 until confirmed"],
+  questions:[
+    {id:"Q1",question:"Is the 40% measured against last year's Q4 sales, or the full year?",why:"Sets the baseline for the target",answer:"Against Q4 last year, units sold"},
+    {id:"Q2",question:"Which channels sell the most torches today?",why:"Shows where effort will pay off",answer:"Online store about 60%, two retail partners the rest"},
+    {id:"Q3",question:"When do campaigns need to be live to catch Christmas demand?",why:"Work must finish before sales happen, not by 31 Dec",answer:"Everything live by 30 November"},
+    {id:"Q4",question:"Who is available to work on this?",why:"Drives the schedule",answer:"Two from marketing and one web developer"},
+    {id:"Q5",question:"Is there a budget for promotions or discounts?",why:"Limits which options are realistic",answer:""}],
+  stories:[],tasks:[],next:"torch2"
+};
+const TORCH2={
+  project:{name:"Torch Sales Growth",goal:"Increase Q4 torch unit sales by 40% on last year by launching online and retail initiatives before the Christmas peak.",
+    users:["Online shopper","Retail partner","Marketing manager"],painPoints:["Last year's Christmas sales were flat","The online store drives about 60% of sales but hasn't been improved"],
+    startDate:"2026-10-05",deadline:"2026-11-30",team:[{role:"Marketing",count:2},{role:"Web developer",count:1}]},
+  features:[
+    {id:"F1",name:"Online store refresh",description:"Better torch product pages, comparison and faster checkout",priority:"must",reason:"Online is 60% of sales; biggest lever"},
+    {id:"F2",name:"Retail bundle promotion",description:"Torch and battery bundles with the two retail partners",priority:"must",reason:"Chosen direction; retail is the remaining 40%"},
+    {id:"F3",name:"Past-customer email campaign",description:"Seasonal offer to previous torch buyers",priority:"should",reason:"Low cost; relies on the refreshed store"},
+    {id:"F4",name:"Marketplace listings",description:"List the range on online marketplaces",priority:"could",reason:"Not chosen; possible if capacity allows"}],
+  ideas:[],
+  assumptions:["Promotion budget will be confirmed by mid-October","Retail partners can take bundle stock from early November","Success measured as Q4 units vs last year's Q4"],
+  questions:[{id:"Q6",question:"What discount can the bundle carry without hurting margin?",why:"Needed before retail partners sign off",answer:""}],
+  stories:[
+    {id:"US-1",featureId:"F1",role:"online shopper",want:"to compare torch models side by side",soThat:"I can choose the right one quickly",
+      criteria:[{title:"Compare models",given:"I'm viewing the torch range",when:"I select 3 models to compare",then:"I see brightness, battery life and price in one table"}]},
+    {id:"US-2",featureId:"F1",role:"online shopper",want:"to check out in as few steps as possible",soThat:"I don't give up before paying",
+      criteria:[{title:"Express checkout",given:"I have a torch in my cart",when:"I choose express checkout",then:"I can pay in 2 steps or fewer"}]},
+    {id:"US-3",featureId:"F2",role:"retail partner",want:"bundle stock and display material by early November",soThat:"the promotion is on shelf for Christmas",
+      criteria:[{title:"Bundle ready",given:"the bundle is agreed",when:"stock ships on 6 November",then:"each store receives bundles and display material by 13 November"}]},
+    {id:"US-4",featureId:"F3",role:"marketing manager",want:"to email past torch buyers a seasonal offer",soThat:"we win repeat purchases",
+      criteria:[{title:"Send campaign",given:"a list of customers who bought a torch in the last 2 years",when:"the campaign sends",then:"each recipient gets a unique code and redemptions are tracked"}]},
+    {id:"US-5",featureId:"F4",role:"online shopper",want:"to find the torch range on the marketplace I already use",soThat:"I can buy without a new account",
+      criteria:[{title:"Marketplace listing",given:"the range is listed",when:"I search for the brand",then:"all current torch models appear with correct prices"}]}],
+  tasks:[
+    {id:"T1",featureId:"F1",name:"Review store analytics and drop-off points",days:2,owner:"Marketing",dependsOn:[]},
+    {id:"T2",featureId:"F1",name:"Redesign product and comparison pages",days:4,owner:"Marketing",dependsOn:[]},
+    {id:"T3",featureId:"F1",name:"Build page and checkout changes",days:6,owner:"Web developer",dependsOn:[]},
+    {id:"T4",featureId:"F1",name:"Test and launch store updates",days:2,owner:"Web developer",dependsOn:[]},
+    {id:"T5",featureId:"F2",name:"Agree bundle terms with retail partners",days:3,owner:"Marketing",dependsOn:[]},
+    {id:"T6",featureId:"F2",name:"Produce bundle packaging and display material",days:5,owner:"Marketing",dependsOn:[]},
+    {id:"T7",featureId:"F2",name:"Receive stock and set up in-store displays",days:3,owner:"Retail partner",dependsOn:[]},
+    {id:"T8",featureId:"F3",name:"Build past-customer segment",days:1,owner:"Marketing",dependsOn:[]},
+    {id:"T9",featureId:"F3",name:"Write and design email campaign",days:3,owner:"Marketing",dependsOn:[]},
+    {id:"T10",featureId:"F3",name:"Send campaign and track redemptions",days:2,owner:"Marketing",dependsOn:["T4"]},
+    {id:"T11",featureId:"F4",name:"Assess marketplace fees and requirements",days:2,owner:"Marketing",dependsOn:[]},
+    {id:"T12",featureId:"F4",name:"Create marketplace listings",days:3,owner:"Web developer",dependsOn:[]}]
+};
+const SCEN={
+  warehouse:{label:"Warehouse picking: clear requirements",notes:WAREHOUSE_NOTES,data:WAREHOUSE},
+  helpdesk:{label:"IT service desk: clear requirements",notes:HELP_NOTES,data:HELPDESK},
+  torch:{label:"Sales growth target: vague brief",notes:TORCH_NOTES,data:TORCH1}
+};
+const NEXT={torch2:TORCH2};
+
+/* ================= state ================= */
+const KEY="kickoff-planner-v2";
+let state={scen:"warehouse",ownNotes:"",data:clone(WAREHOUSE),source:"sample",done:{},sv:"feature",gv:"feature",tab:"brief"};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.data&&s.data.project) state=Object.assign(state,s);}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function fixData(d){
+  d.ideas=d.ideas||[]; d.confirmed=d.confirmed||[]; d.assumptions=d.assumptions||[]; d.questions=d.questions||[]; d.stories=d.stories||[]; d.tasks=d.tasks||[];
+  if(!Array.isArray(d.project.team)||!d.project.team.length) d.project.team=[{role:"Team member",count:Math.max(1,parseInt(d.project.teamSize)||2)}];
+  return d;
+}
+fixData(state.data);
+
+/* ================= dates ================= */
+const DAY=864e5;
+function parseD(s){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||""); return m?Date.UTC(+m[1],+m[2]-1,+m[3]):null}
+function fmt(t){const d=new Date(t); return d.getUTCDate()+" "+MON[d.getUTCMonth()]}
+function fmtFull(t){const d=new Date(t); return d.getUTCDate()+" "+MON[d.getUTCMonth()]+" "+d.getUTCFullYear()}
+function isWE(t){const w=new Date(t).getUTCDay(); return w===0||w===6}
+function iso(t){return new Date(t).toISOString().slice(0,10)}
+function nextMonday(){const n=new Date(); let t=Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())+DAY; while(new Date(t).getUTCDay()!==1) t+=DAY; return iso(t)}
+const range=(a,b,days)=>days>1?fmt(a)+" – "+fmt(b):fmt(a);
+
+/* ================= scheduling ================= */
+function teamOf(d){return (d.project.team||[]).filter(r=>r&&String(r.role).trim()).map(r=>({role:String(r.role).trim(),count:Math.max(1,Math.min(10,parseInt(r.count)||1))}));}
+function schedule(d){
+  const start=parseD(d.project.startDate)??parseD(nextMonday());
+  const wd=[]; for(let t=start; wd.length<700; t+=DAY) if(!isWE(t)) wd.push(t);
+  const team=teamOf(d); if(!team.length) team.push({role:"Team member",count:1});
+  const lanes={}; const key=r=>r.toLowerCase();
+  team.forEach(r=>lanes[key(r.role)]={role:r.role,free:Array(r.count).fill(0),stake:false});
+  const feats=d.features.filter(f=>f.priority!=="wont").map((f,i)=>({f,i})).sort((a,b)=>RANK[a.f.priority]-RANK[b.f.priority]||a.i-b.i).map(x=>x.f);
+  const out={},order=[];
+  for(const f of feats){
+    let prev=null;
+    for(const t of d.tasks.filter(t=>t.featureId===f.id)){
+      let earliest=0;
+      const deps=[...(t.dependsOn||[])]; if(prev) deps.push(prev);
+      for(const id of deps) if(out[id]) earliest=Math.max(earliest,out[id].end);
+      const own=String(t.owner||"").trim();
+      let cand;
+      if(own&&lanes[key(own)]) cand=[lanes[key(own)]];
+      else if(own){lanes[key(own)]={role:own,free:[0],stake:true}; cand=[lanes[key(own)]];}
+      else cand=Object.values(lanes).filter(l=>!l.stake);
+      let best=Infinity,bl=null,bi=0;
+      cand.forEach(l=>l.free.forEach((fr,i)=>{const s=Math.max(fr,earliest); if(s<best){best=s;bl=l;bi=i}}));
+      const days=Math.max(1,Math.round(+t.days||1));
+      bl.free[bi]=best+days;
+      out[t.id]={s:best,end:best+days,task:t,feat:f,role:bl.role,slot:bi,multi:bl.free.length>1,stake:bl.stake};
+      prev=t.id; order.push(t.id);
+    }
+  }
+  const endIdx=Math.max(0,...Object.values(out).map(o=>o.end));
+  const roles=Object.values(lanes).filter(l=>order.some(id=>out[id].role===l.role)).sort((a,b)=>a.stake-b.stake);
+  return {start,wd,out,order,feats,endIdx,team,roles,dateOf:i=>wd[i],finish:endIdx?wd[endIdx-1]:start};
+}
+const ownerName=o=>o.role+(o.multi?" "+(o.slot+1):"");
+function variance(d,sc){
+  const dl=parseD(d.project.deadline); if(!dl) return {txt:"Not set",sub:"Add a deadline in the brief",cls:""};
+  let n=0;
+  if(sc.finish<=dl){for(let t=sc.finish+DAY;t<=dl;t+=DAY) if(!isWE(t)) n++; return {txt:`${n} days early`,sub:"Working days of buffer",cls:"good"};}
+  for(let t=dl+DAY;t<=sc.finish;t+=DAY) if(!isWE(t)) n++; return {txt:`${n} days late`,sub:"Add people or defer Should-haves",cls:"bad"};
+}
+
+/* ================= render ================= */
+const needsScope=d=>!d.features.length;
+function render(){
+  const d=state.data;
+  $("#resTitle").textContent=d.project.name||"Untitled project";
+  $("#resTag").textContent=state.source==="ai"?"AI draft · review before use":"Sample";
+  $("#cStories").textContent=d.stories.length?d.stories.length:"";
+  $("#cTasks").textContent=d.tasks.length?d.tasks.length:"";
+  renderBrief(d); renderQuestions(d); renderStories(d); renderTasks(d); renderTimeline(d);
+  $("#btnPlanTop").hidden=needsScope(d);
+}
+
+function renderBrief(d){
+  const p=d.project;
+  let scope;
+  if(d.features.length){
+    scope=`<table class="scope"><thead><tr><th>ID</th><th>Feature</th><th>Priority</th></tr></thead><tbody>${d.features.map(f=>`
+      <tr><td>${esc(f.id)}</td><td><div class="nm">${esc(f.name)}</div><div class="ds">${esc(f.description)}</div>${f.reason?`<div class="ds" style="color:var(--faint)">${esc(f.reason)}</div>`:""}</td>
+      <td><select id="prio-${esc(f.id)}" data-fid="${esc(f.id)}" aria-label="Priority for ${esc(f.name)}">${Object.keys(P).map(k=>`<option value="${k}" ${k===f.priority?"selected":""}>${P[k]}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table>`;
+  } else scope=`<div class="empty"><b>No concrete features yet</b>The notes describe a goal but not what to build. Answer the open questions or pick a direction below, then continue.</div>`;
+  const ideas=d.ideas.length?`<div class="field"><span class="label">Possible directions (AI suggestions, not in the notes)</span>${d.ideas.map((it,i)=>`<label class="idea" for="idea-${i}"><input type="checkbox" id="idea-${i}" data-ii="${i}" ${it.selected?"checked":""}><span><b style="font-weight:500">${esc(it.name)}</b><br><span class="ds">${esc(it.description)}</span></span></label>`).join("")}</div>`:"";
+  const team=teamOf(d);
+  $("#briefDoc").innerHTML=`
+    <div class="sec"><h3>Overview</h3>
+      <div class="field"><label class="label" for="k-name">Project name</label><input type="text" id="k-name" data-k="name" value="${esc(p.name)}"></div>
+      <div class="field"><label class="label" for="k-goal">Objective</label><textarea id="k-goal" data-k="goal" rows="2">${esc(p.goal)}</textarea></div></div>
+    <div class="sec"><h3>Stakeholders and pain points</h3>
+      <div class="two"><div class="field"><label class="label" for="k-users">Stakeholders (comma-separated)</label><input type="text" id="k-users" data-k="users" value="${esc(p.users.join(", "))}" placeholder="Not stated in notes"></div>
+      <div class="field"><label class="label" for="k-pains">Pain points (one per line)</label><textarea id="k-pains" data-k="painPoints" rows="3" placeholder="Not stated in notes">${esc(p.painPoints.join("\n"))}</textarea></div></div></div>
+    <div class="sec"><h3>Scope and priority</h3>${scope}${ideas}</div>
+    <div class="sec"><h3>Team and schedule</h3>
+      <div class="two"><div class="field"><label class="label" for="k-start">Start date</label><input type="date" id="k-start" data-k="startDate" value="${esc(p.startDate)}"></div>
+      <div class="field"><label class="label" for="k-deadline">Deadline</label><input type="date" id="k-deadline" data-k="deadline" value="${esc(p.deadline)}"></div></div>
+      <table class="team"><thead><tr><th>Delivery role</th><th style="width:100px">People</th></tr></thead><tbody>
+      ${team.map((r,i)=>`<tr><td>${esc(r.role)}</td><td><input type="number" id="team-${i}" data-ti="${i}" min="1" max="10" value="${r.count}" aria-label="People in ${esc(r.role)}"></td></tr>`).join("")}</tbody></table>
+      <p class="hint">Stakeholders who own tasks, such as sign-off or UAT, are scheduled separately from the delivery team.</p></div>
+    <div class="sec"><h3>Assumptions</h3>
+      <textarea id="k-assume" data-k="assumptions" rows="3" placeholder="None recorded" aria-label="Assumptions, one per line">${esc(d.assumptions.join("\n"))}</textarea>
+      <p class="hint">One per line. Confirm these with the stakeholder before sign-off.</p></div>`;
+}
+
+function renderQuestions(d){
+  const qs=d.questions, blocking=needsScope(d), canGo=!!(d.next||d.live);
+  const el=$("#qPanel"); el.classList.toggle("blocking",blocking);
+  el.innerHTML=`<div class="card-h"><h2>${blocking?"Clarify before scoping":"Open questions"}</h2><span class="hint">${qs.length}</span></div>
+    ${blocking?`<p class="small muted" style="padding:12px 18px 0">The notes set a goal but don't say what to build.</p>`:""}
+    ${qs.map((q,i)=>`<div class="q"><p>${esc(q.question)}</p><small>${esc(q.why)}</small><input type="text" id="qa-${i}" data-qi="${i}" placeholder="Stakeholder's answer" value="${esc(q.answer)}" aria-label="Answer"></div>`).join("")||`<p class="small muted" style="padding:14px 18px">No open questions.</p>`}
+    ${canGo?`<div class="foot"><div class="btns"><button class="btn primary" id="btnRefine">${blocking?"Continue with answers":"Update plan"}</button><button class="btn" id="btnAssume">Proceed on assumptions</button></div>
+      <p class="hint">Unanswered questions become documented assumptions.</p><div class="status" id="refineStatus" role="status"></div></div>`:""}
+    ${d.confirmed.length?`<details class="conf"><summary>Confirmed with stakeholder (${d.confirmed.length})</summary>${d.confirmed.map(c=>`<div class="q"><p>${esc(c.question)}</p><small>${esc(c.answer)}</small></div>`).join("")}</details>`:""}`;
+  $("#btnRefine")?.addEventListener("click",()=>runAI("refine"));
+  $("#btnAssume")?.addEventListener("click",()=>runAI("assume"));
+}
+
+function blank(msg){return `<div class="card blank"><b>Waiting on scope</b>${msg}</div>`}
+
+function storyCard(s,showFeature,fm){
+  const f=fm[s.featureId]||{};
+  return `<div class="story"><div class="meta"><span>${esc(s.id)}</span>${showFeature?`<span>${esc(f.name||"")}</span>${f.priority?prioMark(f.priority):""}`:`<span>Stakeholder: ${esc(s.role)}</span>`}</div>
+    <p class="st">As a <b>${esc(s.role)}</b>, I want ${esc(s.want)}, so that ${esc(s.soThat)}.</p>
+    ${s.criteria.length?`<div class="ac-wrap"><table class="ac"><colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup>
+      <thead><tr><th>Scenario</th><th>Given</th><th>When</th><th>Then</th></tr></thead><tbody>${s.criteria.map(c=>`<tr><td>${esc(c.title)}</td><td>${esc(c.given)}</td><td>${esc(c.when)}</td><td>${esc(c.then)}</td></tr>`).join("")}</tbody></table></div>`:""}</div>`;
+}
+function renderStories(d){
+  if(needsScope(d)){$("#storiesOut").innerHTML=blank("Stories are written once the brief has at least one feature."); return;}
+  const fm=Object.fromEntries(d.features.map(f=>[f.id,f]));
+  let html="";
+  if(state.sv==="stakeholder"){
+    const groups={}; d.stories.forEach(s=>{const k=(s.role||"Unspecified").toLowerCase(); (groups[k]=groups[k]||{name:s.role||"Unspecified",items:[]}).items.push(s);});
+    html=Object.values(groups).map(g=>`<div class="group"><div class="group-h"><h3 style="text-transform:capitalize">${esc(g.name)}</h3><span class="id">${g.items.length} ${g.items.length>1?"stories":"story"}</span></div>
+      <div class="card">${g.items.map(s=>storyCard(s,true,fm)).join("")}</div></div>`).join("");
+  } else {
+    html=d.features.map(f=>{const ss=d.stories.filter(s=>s.featureId===f.id); if(!ss.length) return "";
+      return `<div class="group"><div class="group-h"><span class="id">${esc(f.id)}</span><h3>${esc(f.name)}</h3>${prioMark(f.priority)}</div><div class="card">${ss.map(s=>storyCard(s,false,fm)).join("")}</div></div>`;}).join("");
+  }
+  $("#storiesOut").innerHTML=html||`<div class="card blank">No user stories yet.</div>`;
+  document.querySelectorAll("[data-sv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sv===state.sv));
+}
+
+function renderTasks(d){
+  if(needsScope(d)){$("#tasksOut").innerHTML=blank("Tasks are planned once the brief has at least one feature."); return;}
+  const sc=schedule(d);
+  let rows="";
+  for(const ph of ["must","should","could"]){
+    const ids=sc.order.filter(id=>sc.out[id].feat.priority===ph); if(!ids.length) continue;
+    const dn=ids.filter(id=>state.done[id]).length;
+    rows+=`<tr class="ph"><td colspan="5">${PHASE[ph]} <span class="hint" style="font-weight:400;margin-left:8px">${dn} of ${ids.length} done</span></td></tr>`+
+      ids.map(id=>{const o=sc.out[id], done=!!state.done[id];
+        return `<tr class="${done?"done":""}"><td class="cb"><input type="checkbox" id="td-${esc(id)}" data-tid="${esc(id)}" ${done?"checked":""} aria-label="Done: ${esc(o.task.name)}"></td>
+          <td><label for="td-${esc(id)}" class="tn">${esc(o.task.name)}</label><div class="ft">${esc(o.feat.name)}</div></td>
+          <td>${esc(ownerName(o))}${o.stake?`<span class="stake">Stakeholder</span>`:""}</td>
+          <td class="r">${range(sc.dateOf(o.s),sc.dateOf(o.end-1),o.task.days)}</td><td class="r">${o.task.days}d</td></tr>`}).join("");
+  }
+  const wont=d.features.filter(f=>f.priority==="wont");
+  $("#tasksOut").innerHTML=`<div class="card tasks-wrap"><table class="tasks"><thead><tr><th></th><th>Task</th><th>Owner</th><th style="text-align:right">Dates</th><th style="text-align:right">Effort</th></tr></thead><tbody>${rows}</tbody></table></div>`+
+    (wont.length?`<p class="hint" style="margin-top:10px">Out of scope this release: ${wont.map(f=>esc(f.name)).join(", ")}. Not scheduled; still included in the Jira export.</p>`:"");
+}
+
+function renderTimeline(d){
+  $("#exportRow").hidden=needsScope(d);
+  if(needsScope(d)){$("#metricsOut").innerHTML=""; $("#ganttOut").innerHTML=blank("The timeline is scheduled once there are features and tasks."); return;}
+  const sc=schedule(d), v=variance(d,sc), COL=22, LW=240;
+  const people=sc.team.reduce((a,r)=>a+r.count,0);
+  $("#metricsOut").innerHTML=`<div class="card metrics">
+    <div class="metric"><div class="label">Forecast finish</div><div class="v">${sc.endIdx?fmtFull(sc.finish):"—"}</div><div class="s">${sc.endIdx} working days</div></div>
+    <div class="metric"><div class="label">Against deadline</div><div class="v ${v.cls}">${v.txt}</div><div class="s">${v.sub}</div></div>
+    <div class="metric"><div class="label">Tasks</div><div class="v">${sc.order.length}</div><div class="s">${sc.order.reduce((a,id)=>a+sc.out[id].task.days,0)} person-days</div></div>
+    <div class="metric"><div class="label">Delivery team</div><div class="v">${people} ${people>1?"people":"person"}</div><div class="s">${sc.team.length} role${sc.team.length>1?"s":""}</div></div></div>`;
+  const dl=parseD(d.project.deadline);
+  const lastCal=Math.max(sc.finish,dl||0)+4*DAY;
+  const nDays=Math.round((lastCal-sc.start)/DAY)+1, W=nDays*COL, cal=t=>Math.round((t-sc.start)/DAY);
+  let ticks="",wk="";
+  for(let i=0;i<nDays;i++){const t=sc.start+i*DAY,w=new Date(t).getUTCDay();
+    if(w===1||i===0) ticks+=`<div class="tick" style="left:${i*COL}px">${fmt(t)}</div>`;
+    if(w===6) wk+=`<div class="wk" style="left:${i*COL}px;width:${COL*2}px"></div>`;}
+  const row=(id,showOwner)=>{const o=sc.out[id], a=cal(sc.dateOf(o.s)), b=cal(sc.dateOf(o.end-1));
+    const lab=showOwner?`${ownerName(o)} · ${o.task.days}d`:`${o.feat.name} · ${o.task.days}d`;
+    return `<div class="grow"><div class="glabel" title="${esc(o.task.name)}"><span>${esc(o.task.name)}</span></div><div class="gtrack" style="width:${W}px">
+      <div class="bar ${o.feat.priority} ${o.stake?"stake":""}" style="left:${a*COL+2}px;width:${(b-a+1)*COL-4}px" title="${esc(o.task.name)}: ${range(sc.dateOf(o.s),sc.dateOf(o.end-1),o.task.days)}"></div>
+      <div class="blab" style="left:${(b+1)*COL+6}px">${esc(lab)}</div></div></div>`;};
+  let rows=`<div class="grow head"><div class="glabel">${state.gv==="owner"?"Owner / task":"Feature / task"}</div><div class="gtrack" style="width:${W}px;height:32px">${ticks}</div></div>`;
+  if(state.gv==="owner"){
+    for(const l of sc.roles){const ids=sc.order.filter(id=>sc.out[id].role===l.role).sort((x,y)=>sc.out[x].s-sc.out[y].s); if(!ids.length) continue;
+      rows+=`<div class="grow fh"><div class="glabel"><span>${esc(l.role)}${l.stake?' <span class="stake">Stakeholder</span>':""}</span></div><div class="gtrack" style="width:${W}px"></div></div>`+ids.map(id=>row(id,false)).join("");}
+  } else {
+    for(const f of sc.feats){const ids=sc.order.filter(id=>sc.out[id].feat.id===f.id); if(!ids.length) continue;
+      rows+=`<div class="grow fh"><div class="glabel"><span>${esc(f.name)}</span></div><div class="gtrack" style="width:${W}px"></div></div>`+ids.map(id=>row(id,true)).join("");}
+  }
+  const dlLine=dl?`<div class="dl" style="left:${(cal(dl)+1)*COL}px" title="Deadline ${fmt(dl)}"></div>`:"";
+  $("#ganttOut").innerHTML=`<div class="card"><div class="gscroll"><div class="gantt"><div class="goverlay" style="left:${LW}px;width:${W}px">${wk}${dlLine}</div>${rows}</div></div>
+    <div class="legend"><span><i style="background:var(--p-must)"></i>Must have</span><span><i style="background:var(--p-should)"></i>Should have</span><span><i style="background:var(--p-could)"></i>Could have</span><span><i style="background:var(--p-should);background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.45) 0 3px,transparent 3px 6px)"></i>Stakeholder task</span>${dl?`<span><i style="width:0;height:11px;border-left:1.5px dashed var(--danger);border-radius:0"></i>Deadline ${fmt(dl)}</span>`:""}</div></div>`;
+  document.querySelectorAll("[data-gv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.gv===state.gv));
+}
+
+/* ================= interactions ================= */
+function showTab(t){state.tab=t; ["brief","stories","tasks","timeline"].forEach(x=>{$("#pane-"+x).hidden=x!==t; $("#tab-"+x).setAttribute("aria-selected",x===t)}); save();}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+document.querySelectorAll("[data-sv]").forEach(b=>b.addEventListener("click",()=>{state.sv=b.dataset.sv; save(); renderStories(state.data);}));
+document.querySelectorAll("[data-gv]").forEach(b=>b.addEventListener("click",()=>{state.gv=b.dataset.gv; save(); renderTimeline(state.data);}));
+const replan=()=>{save(); renderTasks(state.data); renderTimeline(state.data);};
+document.addEventListener("input",e=>{
+  const t=e.target, d=state.data;
+  if(t.dataset.k){const k=t.dataset.k;
+    if(k==="users") d.project.users=t.value.split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
+    else if(k==="painPoints") d.project.painPoints=t.value.split("\n").map(s=>s.trim()).filter(Boolean);
+    else if(k==="assumptions") d.assumptions=t.value.split("\n").map(s=>s.trim()).filter(Boolean);
+    else {d.project[k]=t.value; if(k==="name") $("#resTitle").textContent=t.value||"Untitled project";}
+    replan();
+  }
+  if(t.dataset.ti!==undefined){d.project.team[+t.dataset.ti].count=Math.max(1,parseInt(t.value)||1); replan();}
+  if(t.dataset.qi!==undefined){d.questions[+t.dataset.qi].answer=t.value; save();}
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.fid){const f=state.data.features.find(f=>f.id===t.dataset.fid); f.priority=t.value; save(); renderStories(state.data); renderTasks(state.data); renderTimeline(state.data);}
+  if(t.dataset.tid){state.done[t.dataset.tid]=t.checked; save(); renderTasks(state.data);}
+  if(t.dataset.ii!==undefined){state.data.ideas[+t.dataset.ii].selected=t.checked; save();}
+});
+function setStatus(msg,cls,el="#status"){const s=$(el); if(!s) return; s.textContent=msg; s.className="status"+(cls?" "+cls:"");}
+
+/* ================= input panel ================= */
+const scenSel=$("#scenSel"), own=$("#ownNotes");
+scenSel.innerHTML=Object.entries(SCEN).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join("");
+scenSel.value=SCEN[state.scen]?state.scen:"warehouse";
+const showPreview=()=>{$("#scenPreview").textContent=SCEN[scenSel.value].notes;};
+showPreview();
+scenSel.addEventListener("change",()=>{state.scen=scenSel.value; save(); showPreview();});
+own.value=state.ownNotes||"";
+const count=()=>{$("#charCount").textContent=own.value.length?own.value.length.toLocaleString()+" / 4,000":"";};
+count();
+own.addEventListener("input",()=>{state.ownNotes=own.value; save(); count();});
+const toResults=()=>{const r=$("#results"); if(r.getBoundingClientRect().top>window.innerHeight*0.6) r.scrollIntoView({behavior:"smooth",block:"start"});};
+$("#btnSample").addEventListener("click",()=>{
+  const k=scenSel.value;
+  state.data=fixData(clone(SCEN[k].data)); state.source="sample"; state.done={};
+  save(); render(); showTab("brief"); toResults();
+  setStatus(needsScope(state.data)?"This brief is too vague to scope. Answer the clarifying questions, then continue.":"Sample plan loaded.","");
+});
+
+/* ================= AI ================= */
+let ctl=null;
+const ERRS={quota:"Live AI has reached its free usage limit for now. Try again later, or load a sample scenario.",
+  too_long:"Keep the notes under 4,000 characters.",empty:"Paste some meeting notes first.",invalid_json:"The AI reply couldn't be read. Try again.",
+  config:"Live AI isn't configured on this site yet.",origin:"Live AI only works on the Brief to Backlog site.",upstream:"The AI service didn't respond. Try again in a moment."};
+
+function normalize(r){
+  const arr=x=>Array.isArray(x)?x:[], str=x=>x==null?"":String(x);
+  const pr=x=>["must","should","could","wont"].includes(x)?x:"should";
+  r=r||{}; const p=r.project||{};
+  const team=arr(p.team).filter(x=>x&&x.role).map(x=>({role:str(x.role).trim(),count:Math.max(1,Math.min(10,parseInt(x.count)||1))}));
+  return fixData({project:{name:str(p.name)||"Untitled project",goal:str(p.goal),users:arr(p.users).map(str).filter(Boolean),painPoints:arr(p.painPoints).map(str).filter(Boolean),
+      startDate:parseD(p.startDate)?p.startDate:nextMonday(),deadline:parseD(p.deadline)?p.deadline:"",team,teamSize:parseInt(p.teamSize)||2},
+    features:arr(r.features).filter(f=>f&&f.name).map((f,i)=>({id:str(f.id)||"F"+(i+1),name:str(f.name),description:str(f.description),priority:pr(f.priority),reason:str(f.reason)})),
+    ideas:arr(r.ideas).filter(x=>x&&x.name).map(x=>({name:str(x.name),description:str(x.description),selected:false})),
+    assumptions:arr(r.assumptions).map(str).map(x=>x.trim()).filter(Boolean),
+    questions:arr(r.questions).filter(q=>q&&q.question).map((q,i)=>({id:str(q.id)||"Q"+(i+1),question:str(q.question),why:str(q.why),answer:""})),
+    stories:arr(r.stories).map((s,i)=>({id:str(s.id)||"US-"+(i+1),featureId:str(s.featureId),role:str(s.role),want:str(s.want),soThat:str(s.soThat),
+      criteria:arr(s.criteria).map(c=>({title:str(c.title),given:str(c.given),when:str(c.when),then:str(c.then)}))})),
+    tasks:arr(r.tasks).map((t,i)=>({id:str(t.id)||"T"+(i+1),featureId:str(t.featureId),name:str(t.name),owner:str(t.owner).trim(),days:Math.max(1,Math.min(30,Math.round(+t.days)||1)),dependsOn:arr(t.dependsOn).map(str)}))});
+}
+
+async function callApi(body){
+  let r;
+  try{r=await fetch("/api/plan",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl.signal});}
+  catch(e){throw {code:e.name==="AbortError"?"cancelled":"upstream"};}
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok) throw {code:j.error||"upstream",status:j.status,detail:j.detail,model:j.model};
+  return j.data;
+}
+
+const confirmedFrom=prev=>[...(prev.confirmed||[]),...(prev.questions||[]).filter(q=>q.answer.trim()).map(q=>({question:q.question,answer:q.answer.trim()}))];
+
+async function runLive(mode){
+  const refine=mode!=="initial";
+  const notes=refine?(state.data.liveNotes||""):own.value.trim();
+  const stEl=refine?"#refineStatus":"#status";
+  if(!notes){setStatus(ERRS.empty,"err"); own.focus(); return;}
+  ctl=new AbortController();
+  const t0=Date.now(); let label="";
+  const say=(m,el)=>{label=m; setStatus(m+"… "+Math.round((Date.now()-t0)/1000)+"s","",el||stEl);};
+  const timer=setInterval(()=>{if(label) say(label);},1000);
+  const busy=b=>{$("#btnAnalyse").disabled=b; $("#btnStop").hidden=!b; ["#btnRefine","#btnAssume"].forEach(id=>{const x=$(id); if(x) x.disabled=b;});};
+  busy(true);
+  try{
+    const prev=state.data, confirmed=refine?confirmedFrom(prev):[];
+    say("Step 1 of 2: drafting scope and open questions");
+    const context=refine?{questions:prev.questions,ideas:prev.ideas,features:prev.features.map(f=>({name:f.name,priority:f.priority})),assumptions:prev.assumptions,confirmed:prev.confirmed,team:teamOf(prev)}:{};
+    const scope=normalize(await callApi({step:"scope",mode,notes,context,today:iso(Date.now()),nextMonday:nextMonday()}));
+    scope.confirmed=confirmed;
+    if(refine&&!scope.features.length){
+      const src=prev.ideas.filter(i=>i.selected), pool=src.length?src:(scope.ideas.length?scope.ideas:prev.ideas);
+      scope.features=pool.slice(0,4).map((i,k)=>({id:"F"+(k+1),name:i.name,description:i.description,priority:k===0?"must":"should",reason:"Proposed direction; confirm with stakeholder"}));
+      scope.ideas=[];
+    }
+    scope.live=true; scope.liveNotes=notes;
+    state.data=scope; state.source="ai"; state.done={};
+    render(); showTab("brief"); toResults(); busy(true);
+    if(scope.features.length){
+      say("Step 2 of 2: writing user stories and tasks", "#status");
+      const plan=normalize(await callApi({step:"plan",notes,scope:{features:scope.features,users:scope.project.users,team:teamOf(scope),questions:scope.questions.map(q=>({question:q.question}))}}));
+      const fids=new Set(scope.features.map(f=>f.id));
+      scope.stories=plan.stories.filter(s=>fids.has(s.featureId));
+      scope.tasks=plan.tasks.filter(t=>fids.has(t.featureId));
+      label=""; save(); render();
+      setStatus(`Plan drafted: ${scope.features.length} features, ${scope.stories.length} user stories, ${scope.tasks.length} tasks.`,"");
+    } else {label=""; save(); setStatus(`The notes need more detail before they can be scoped. ${scope.questions.length} clarifying questions are ready.`,"");}
+  }catch(e){
+    label="";
+    if(e&&e.code==="cancelled") setStatus("Stopped.","",stEl);
+    else setStatus((ERRS[e&&e.code]||ERRS.upstream)+(e&&e.status?` (Gemini ${e.status}${e.model?" · "+e.model:""}: ${e.detail||"no message"})`:""),"err",$(stEl)?stEl:"#status");
+  }finally{clearInterval(timer); busy(false); ctl=null;}
+}
+
+function runPresetFollowUp(mode){
+  const nk=state.data.next; if(!nk||!NEXT[nk]) return;
+  const prev=state.data, nd=fixData(clone(NEXT[nk]));
+  nd.confirmed=confirmedFrom(prev);
+  if(mode==="assume") nd.assumptions=[...nd.assumptions,...prev.questions.filter(q=>!q.answer.trim()).map(q=>"Unanswered: "+q.question)];
+  state.data=nd; state.done={}; save(); render(); showTab("brief");
+  setStatus("Plan drafted from the stakeholder's answers and the chosen directions.","","#refineStatus");
+}
+function runAI(mode){ if(mode==="initial") return runLive("initial"); return state.data.live?runLive(mode):runPresetFollowUp(mode); }
+$("#btnAnalyse").addEventListener("click",()=>runAI("initial"));
+$("#btnStop").addEventListener("click",()=>ctl&&ctl.abort());
+
+/* ================= exports ================= */
+function slug(){return (state.data.project.name||"project").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"").toLowerCase()||"project";}
+function csvCell(s){s=String(s??""); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function buildCSV(){
+  const d=state.data, pm={must:"Highest",should:"High",could:"Medium",wont:"Low"};
+  const fm=Object.fromEntries(d.features.map(f=>[f.id,f]));
+  const lab=f=>(f.name||"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  const rows=[["Summary","Issue Type","Priority","Labels","Description"]];
+  for(const s of d.stories){const f=fm[s.featureId]||{};
+    rows.push([`${s.id} ${s.want}`,"Story",pm[f.priority]||"Medium",lab(f),`As a ${s.role}, I want ${s.want}, so that ${s.soThat}.\n\nAcceptance criteria:\n`+s.criteria.map(c=>`* ${c.title}\n  Given ${c.given}\n  When ${c.when}\n  Then ${c.then}`).join("\n")]);}
+  for(const t of d.tasks){const f=fm[t.featureId]||{};
+    rows.push([`${t.id} ${t.name}`,"Task",pm[f.priority]||"Medium",lab(f),`Feature: ${f.name||""}\nOwner: ${t.owner||"Unassigned"}\nEstimate: ${t.days} working day${t.days>1?"s":""}`]);}
+  return "﻿"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+}
+function buildChecklist(){
+  const d=state.data, sc=schedule(d);
+  let md=`# ${d.project.name}: task checklist\n`;
+  for(const ph of ["must","should","could"]){const ids=sc.order.filter(id=>sc.out[id].feat.priority===ph); if(!ids.length) continue;
+    md+=`\n## ${PHASE[ph]}\n`+ids.map(id=>{const o=sc.out[id]; return `- [${state.done[id]?"x":" "}] ${o.task.name} (${ownerName(o)} · ${range(sc.dateOf(o.s),sc.dateOf(o.end-1),o.task.days)} · ${o.task.days}d)`}).join("\n")+"\n";}
+  return md;
+}
+function copyText(text,ok){
+  const box=$("#copyBox");
+  navigator.clipboard.writeText(text).then(()=>{box.hidden=true; setStatus(ok,"","#exportStatus");},()=>{
+    box.hidden=false; box.textContent=text; const r=document.createRange(); r.selectNodeContents(box); const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+    setStatus("Couldn't copy automatically. The text is selected below; copy it manually.","","#exportStatus");});
+}
+$("#btnCopyCsv").addEventListener("click",()=>copyText(buildCSV(),"Jira CSV copied. Save it as a .csv file, then import it in Jira."));
+$("#btnCopyList").addEventListener("click",()=>copyText(buildChecklist(),"Checklist copied as Markdown. Paste it into Notion, Jira or a to-do app."));
+function downloadPlan(el){
+  const url=URL.createObjectURL(new Blob([buildReport()],{type:"text/html"}));
+  const a=document.createElement("a"); a.href=url; a.download=slug()+"-project-plan.html"; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  setStatus("Plan downloaded. Open it in a browser; use Print to save as PDF.","",el);
+}
+$("#btnPlan").addEventListener("click",()=>downloadPlan("#exportStatus"));
+$("#btnPlanTop").addEventListener("click",()=>downloadPlan("#status"));
+
+function reportGantt(d,sc){
+  const dl=parseD(d.project.deadline);
+  const lastCal=Math.max(sc.finish,dl||0)+3*DAY, n=Math.round((lastCal-sc.start)/DAY)+1;
+  const pct=t=>(Math.round((t-sc.start)/DAY)/n*100).toFixed(3)+"%";
+  const pw=(a,b)=>((Math.round((b-a)/DAY)+1)/n*100).toFixed(3)+"%";
+  let grid="",ticks="";
+  for(let i=0;i<n;i++){const t=sc.start+i*DAY; if(new Date(t).getUTCDay()===1||i===0){grid+=`<span class="gl" style="left:${pct(t)}"></span>`; if(i<n-4) ticks+=`<span class="tk" style="left:${pct(t)}">${fmt(t)}</span>`;}}
+  const dline=dl?`<span class="dl" style="left:${((Math.round((dl-sc.start)/DAY)+1)/n*100).toFixed(3)}%"></span>`:"";
+  let rows=`<tr class="gh"><td>Feature / task</td><td><div class="trk">${ticks}</div></td></tr>`;
+  for(const f of sc.feats){const ids=sc.order.filter(id=>sc.out[id].feat.id===f.id); if(!ids.length) continue;
+    rows+=`<tr class="gf"><td colspan="2">${esc(f.name)}</td></tr>`;
+    rows+=ids.map(id=>{const o=sc.out[id], a=sc.dateOf(o.s), b=sc.dateOf(o.end-1);
+      return `<tr><td><span class="tnm">${esc(o.task.name)}</span><span class="own">${esc(ownerName(o))}</span></td><td><div class="trk">${grid}${dline}<span class="br ${o.feat.priority}${o.stake?" sk":""}" style="left:${pct(a)};width:${pw(a,b)}"></span></div></td></tr>`;}).join("");}
+  return `<table class="gt">${rows}</table>`;
+}
+function buildReport(){
+  const d=state.data,p=d.project,sc=schedule(d),v=variance(d,sc),dl=parseD(p.deadline);
+  const inScope=d.features.filter(f=>f.priority!=="wont"), people=sc.team.reduce((a,r)=>a+r.count,0);
+  const fm=Object.fromEntries(d.features.map(f=>[f.id,f]));
+  const nl=(a,pre,empty)=>a.length?`<table class="nl">${a.map((x,i)=>`<tr><td class="ix">${pre}${i+1}</td><td>${x}</td></tr>`).join("")}</table>`:`<p class="mt">${empty}</p>`;
+  const resp=sc.roles.map(l=>{const ids=sc.order.filter(id=>sc.out[id].role===l.role); const days=ids.reduce((a,id)=>a+sc.out[id].task.days,0);
+    const first=Math.min(...ids.map(id=>sc.out[id].s)), last=Math.max(...ids.map(id=>sc.out[id].end));
+    const tm=sc.team.find(r=>r.role===l.role);
+    return `<tr><td>${esc(l.role)}</td><td>${l.stake?"Stakeholder":"Delivery team"+(tm&&tm.count>1?" ("+tm.count+")":"")}</td><td class="r">${ids.length}</td><td class="r">${days}d</td><td class="r">${fmt(sc.dateOf(first))} – ${fmt(sc.dateOf(last-1))}</td></tr>`;}).join("");
+  let tasks="";
+  for(const ph of ["must","should","could"]){const ids=sc.order.filter(id=>sc.out[id].feat.priority===ph); if(!ids.length) continue;
+    tasks+=`<tr class="grp"><td colspan="5">${PHASE[ph]}</td></tr>`+ids.map(id=>{const o=sc.out[id];
+      return `<tr><td class="cb"><span class="box">${state.done[id]?"&#10003;":""}</span></td><td>${esc(o.task.name)}<div class="mt">${esc(o.feat.name)}</div></td><td>${esc(ownerName(o))}</td><td class="r">${range(sc.dateOf(o.s),sc.dateOf(o.end-1),o.task.days)}</td><td class="r">${o.task.days}d</td></tr>`;}).join("");}
+  const wont=d.features.filter(f=>f.priority==="wont");
+  const stories=d.features.map(f=>{const ss=d.stories.filter(s=>s.featureId===f.id); if(!ss.length) return "";
+    return `<h3>${esc(f.id)} · ${esc(f.name)} <span class="pm">${P[f.priority]}</span></h3>`+ss.map(s=>`<div class="story"><p><span class="sid">${esc(s.id)}</span>As a <b>${esc(s.role)}</b>, I want ${esc(s.want)}, so that ${esc(s.soThat)}.</p>
+      ${s.criteria.length?`<table class="ac"><colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup><tr><th>Scenario</th><th>Given</th><th>When</th><th>Then</th></tr>${s.criteria.map(c=>`<tr><td>${esc(c.title)}</td><td>${esc(c.given)}</td><td>${esc(c.when)}</td><td>${esc(c.then)}</td></tr>`).join("")}</table>`:""}</div>`).join("");}).join("");
+  const openQ=d.questions.filter(q=>!q.answer.trim());
+  const today=new Date(), prep=today.getDate()+" "+MON[today.getMonth()]+" "+today.getFullYear();
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(p.name)} · Project Plan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+@page{size:A4;margin:16mm 14mm}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#fff;color:#17212B;font-family:"IBM Plex Sans","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:13px;line-height:1.55;font-variant-numeric:tabular-nums}
+.page{max-width:900px;margin:0 auto;padding:48px 36px 56px}
+h1,h2,h3,p{margin:0}
+.cover{border-top:3px solid #0F5F5C;padding-top:20px;margin-bottom:32px}
+.eb{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#0F5F5C;margin-bottom:6px}
+h1{font-size:26px;font-weight:600;line-height:1.25;margin-bottom:6px}
+.lede{font-size:14px;color:#3B4651;max-width:70ch;margin-bottom:14px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 24px;font-size:12px;color:#5F6B76}.meta b{color:#17212B;font-weight:500}
+section{margin-top:32px}
+h2{font-size:16px;font-weight:600;padding-bottom:8px;border-bottom:1px solid #DCE1E5;margin-bottom:12px}
+h2 .n{color:#0F5F5C;margin-right:10px}
+h3{font-size:14px;font-weight:600;margin:18px 0 8px}
+.mt{color:#5F6B76;font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:#5F6B76;text-align:left;padding:7px 8px;border-bottom:1px solid #DCE1E5;background:#F6F7F8}
+td{padding:8px;border-bottom:1px solid #EDF0F2;vertical-align:top}
+td.r,th.r{text-align:right;white-space:nowrap}
+.kp{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #DCE1E5;border-radius:4px;margin-bottom:16px}
+.kp div{padding:12px 14px;border-left:1px solid #DCE1E5}.kp div:first-child{border-left:0}
+.kp .l{font-size:12px;color:#5F6B76;text-transform:uppercase;letter-spacing:.04em;padding:0;border:0}
+.kp .v{font-size:16px;font-weight:600;padding:2px 0 0;border:0}.kp .s{font-size:12px;color:#5F6B76;padding:0;border:0}
+.good{color:#1F7A45!important}.bad{color:#B42318!important}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.nl td{padding:6px 8px}.nl td.ix{width:40px;color:#8A949D}
+.pm{font-size:12px;font-weight:500;color:#5F6B76;border:1px solid #DCE1E5;border-radius:3px;padding:0 6px;margin-left:6px;white-space:nowrap}
+.gt{table-layout:fixed;font-size:12px}
+.gt td{padding:0 8px;height:26px;vertical-align:middle;border-bottom:1px solid #EDF0F2}
+.gt td:first-child{width:36%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gt td:last-child{padding:0}
+.gt .gh td{height:28px;color:#5F6B76;font-size:12px;text-transform:uppercase;letter-spacing:.04em;background:#F6F7F8}
+.gt .gh td:last-child{text-transform:none;letter-spacing:0}
+.gt .gf td{font-weight:600;background:#F6F7F8;height:26px}
+.tnm{margin-right:6px}.own{color:#8A949D}
+.trk{position:relative;height:26px}
+.gl{position:absolute;top:0;bottom:0;border-left:1px solid #EDF0F2}
+.tk{position:absolute;top:6px;padding-left:4px;font-size:12px;white-space:nowrap}
+.dl{position:absolute;top:0;bottom:0;border-left:1.5px dashed #B42318}
+.br{position:absolute;top:8px;height:10px;border-radius:2px}
+.br.must{background:#0F5F5C}.br.should{background:#5C9C97}.br.could{background:#B3D3D0}
+.br.sk{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 3px,transparent 3px 6px)}
+.lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:12px;color:#5F6B76;margin-top:8px}.lg i{display:inline-block;width:12px;height:9px;border-radius:2px;margin-right:6px}
+tr.grp td{background:#F6F7F8;font-weight:600}
+td.cb{width:30px}
+.box{display:inline-block;width:12px;height:12px;border:1px solid #8A949D;border-radius:2px;font-size:10px;line-height:10px;text-align:center;color:#0F5F5C}
+.story{margin-bottom:14px;break-inside:avoid}.story p{margin-bottom:6px}
+.sid{font-size:12px;font-weight:600;color:#0F5F5C;margin-right:8px}
+.ac{table-layout:fixed}.ac th{background:#fff}
+footer{margin-top:40px;padding-top:12px;border-top:1px solid #DCE1E5;font-size:12px;color:#5F6B76;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+@media(max-width:680px){.page{padding:28px 16px}.kp{grid-template-columns:1fr 1fr}.kp div:nth-child(3){border-left:0}.kp div:nth-child(n+3){border-top:1px solid #DCE1E5}.cols{grid-template-columns:1fr}.gt td:first-child{width:44%}}
+@media print{.page{padding:0;max-width:none}h2,h3{break-after:avoid}tr,.story{break-inside:avoid}}
+</style></head><body><div class="page">
+<header class="cover"><p class="eb">Project plan</p><h1>${esc(p.name)}</h1><p class="lede">${esc(p.goal)}</p>
+<div class="meta"><span>Prepared <b>${prep}</b></span><span>Delivery team <b>${people} ${people>1?"people":"person"}</b></span><span>Status <b>Draft for stakeholder review</b></span></div></header>
+
+<section><h2><span class="n">1</span>Executive summary</h2>
+<div class="kp"><div><p class="l">Start</p><p class="v">${fmtFull(sc.start)}</p><p class="s">Kickoff</p></div>
+<div><p class="l">Forecast finish</p><p class="v">${sc.endIdx?fmtFull(sc.finish):"—"}</p><p class="s">${sc.endIdx} working days</p></div>
+<div><p class="l">Deadline</p><p class="v">${dl?fmtFull(dl):"Not set"}</p><p class="s ${v.cls}">${v.txt}</p></div>
+<div><p class="l">Scope</p><p class="v">${inScope.length} features</p><p class="s">${sc.order.length} tasks · ${sc.order.reduce((a,id)=>a+sc.out[id].task.days,0)} person-days</p></div></div>
+<div class="cols"><div><h3>Stakeholders</h3>${nl(p.users.map(esc),"S","Not stated.")}</div><div><h3>Pain points</h3>${nl(p.painPoints.map(esc),"P","Not stated.")}</div></div></section>
+
+<section><h2><span class="n">2</span>Scope and priority</h2>
+<table><tr><th style="width:44px">ID</th><th>Feature</th><th style="width:110px">Priority</th><th style="width:32%">Rationale</th></tr>
+${d.features.map(f=>`<tr><td class="mt">${esc(f.id)}</td><td>${esc(f.name)}<div class="mt">${esc(f.description)}</div></td><td>${P[f.priority]}</td><td class="mt">${esc(f.reason)}</td></tr>`).join("")}</table></section>
+
+<section><h2><span class="n">3</span>Team and responsibilities</h2>
+<table><tr><th>Owner</th><th>Type</th><th class="r">Tasks</th><th class="r">Effort</th><th class="r">Active</th></tr>${resp}</table></section>
+
+<section><h2><span class="n">4</span>Timeline</h2>${reportGantt(d,sc)}
+<div class="lg"><span><i style="background:#0F5F5C"></i>Must have</span><span><i style="background:#5C9C97"></i>Should have</span><span><i style="background:#B3D3D0"></i>Could have</span><span><i style="background:#5C9C97;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 3px,transparent 3px 6px)"></i>Stakeholder task</span>${dl?`<span><i style="width:0;border-left:1.5px dashed #B42318;border-radius:0"></i>Deadline ${fmt(dl)}</span>`:""}</div></section>
+
+<section><h2><span class="n">5</span>Task checklist</h2>
+<table><tr><th></th><th>Task</th><th style="width:22%">Owner</th><th class="r" style="width:120px">Dates</th><th class="r" style="width:60px">Effort</th></tr>${tasks}</table>
+${wont.length?`<p class="mt" style="margin-top:8px">Out of scope this release: ${wont.map(f=>esc(f.name)).join(", ")}.</p>`:""}</section>
+
+<section><h2><span class="n">6</span>User stories and acceptance criteria</h2>${stories}</section>
+
+<section><h2><span class="n">7</span>Assumptions and open questions</h2>
+<div class="cols"><div><h3 style="margin-top:0">Assumptions</h3>${nl(d.assumptions.map(esc),"A","None recorded.")}</div><div><h3 style="margin-top:0">Open questions</h3>${nl(openQ.map(q=>esc(q.question)),"Q","None.")}</div></div>
+${d.confirmed.length?`<h3>Confirmed with stakeholder</h3><table><tr><th>Question</th><th>Answer</th></tr>${d.confirmed.map(c=>`<tr><td>${esc(c.question)}</td><td>${esc(c.answer)}</td></tr>`).join("")}</table>`:""}</section>
+
+<footer><span>${esc(p.name)} · Project plan</span><span>Estimates are indicative and subject to validation with the delivery team.</span></footer>
+</div></body></html>`;
+}
+
+/* ================= boot ================= */
+render();
+showTab(["brief","stories","tasks","timeline"].includes(state.tab)?state.tab:"brief");
+})();
+</script>
+</body>
+</html>
