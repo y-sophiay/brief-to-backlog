@@ -75,21 +75,23 @@ select{cursor:pointer}
 .card-b{padding:18px}
 
 /* input area */
-.input{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px}
+.input{display:grid;grid-template-columns:minmax(0,.6fr) minmax(0,1.6fr);gap:16px}
 @media (max-width:820px){.input{grid-template-columns:1fr}}
 .preview{font-size:13px;color:var(--muted);background:var(--sunken);border-radius:6px;padding:10px 12px;white-space:pre-line;max-height:132px;overflow:auto}
 #ownNotes{min-height:132px}
 .hint{font-size:12px;color:var(--faint)}
 
 /* results */
-.results{margin-top:28px}
+.results{margin-top:28px;background:var(--surface);border:2px solid var(--accent);border-radius:10px;padding:18px 20px 20px;box-shadow:0 2px 12px rgba(15,95,92,.08)}
 .res-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:12px}
-.res-head h2{font-size:17px;font-weight:600}
+.res-head h2{font-size:20px;font-weight:600;color:var(--accent)}
 .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 8px;background:var(--surface)}
-nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);z-index:10}
-nav.tabs button{border:0;background:none;padding:10px 14px;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
-nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:500}
-nav.tabs .count{font-size:12px;color:var(--faint);margin-left:4px}
+nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--surface);z-index:10}
+nav.tabs button{border:0;background:none;padding:12px 18px;font-size:16px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--accent);border-bottom:3px solid var(--accent);font-weight:600}
+nav.tabs .count{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:0 7px;margin-left:6px}
+nav.tabs button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;line-height:1.25}
+nav.tabs .td{font-size:12px;font-weight:400;color:var(--faint);margin-top:2px}
 .pane{padding-top:20px}
 .toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
 .toolbar p{font-size:13px;color:var(--muted);max-width:70ch}
@@ -240,10 +242,10 @@ footer.site{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);fo
   <section class="results" id="results" aria-label="Plan">
     <div class="res-head"><h2 id="resTitle"></h2><span class="tag" id="resTag"></span></div>
     <nav class="tabs" role="tablist" aria-label="Plan sections">
-      <button role="tab" id="tab-brief" data-tab="brief" aria-selected="true">Brief</button>
-      <button role="tab" id="tab-stories" data-tab="stories" aria-selected="false">User stories<span class="count" id="cStories"></span></button>
-      <button role="tab" id="tab-tasks" data-tab="tasks" aria-selected="false">Tasks<span class="count" id="cTasks"></span></button>
-      <button role="tab" id="tab-timeline" data-tab="timeline" aria-selected="false">Timeline</button>
+      <button role="tab" id="tab-brief" data-tab="brief" aria-selected="true"><span class="tt">Brief</span><span class="td">Summary, scope &amp; open questions</span></button>
+      <button role="tab" id="tab-stories" data-tab="stories" aria-selected="false"><span class="tt">User stories<span class="count" id="cStories"></span></span><span class="td">Given / When / Then acceptance criteria</span></button>
+      <button role="tab" id="tab-tasks" data-tab="tasks" aria-selected="false"><span class="tt">Tasks<span class="count" id="cTasks"></span></span><span class="td">Owners, effort &amp; dependencies</span></button>
+      <button role="tab" id="tab-timeline" data-tab="timeline" aria-selected="false"><span class="tt">Timeline</span><span class="td">Gantt chart &amp; forecast finish</span></button>
     </nav>
 
     <div class="pane" id="pane-brief">
@@ -475,7 +477,8 @@ const NEXT={torch2:TORCH2};
 
 /* ================= state ================= */
 const KEY="kickoff-planner-v2";
-let state={scen:"warehouse",ownNotes:"",data:clone(WAREHOUSE),source:"sample",done:{},sv:"feature",gv:"feature",tab:"brief"};
+const emptyPlan=()=>fixData({project:{name:"",goal:"",users:[],painPoints:[],startDate:"",deadline:"",team:[]},features:[]});
+let state={scen:"warehouse",ownNotes:"",data:emptyPlan(),source:"none",done:{},sv:"feature",gv:"feature",tab:"brief"};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.data&&s.data.project) state=Object.assign(state,s);}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function fixData(d){
@@ -540,8 +543,9 @@ function variance(d,sc){
 const needsScope=d=>!d.features.length;
 function render(){
   const d=state.data;
-  $("#resTitle").textContent=d.project.name||"Untitled project";
-  $("#resTag").textContent=state.source==="ai"?"AI draft · review before use":"Sample";
+  $("#resTitle").textContent=d.project.name||(needsScope(d)?"No plan yet":"Untitled project");
+  $("#resTag").textContent=state.source==="ai"?"AI draft · review before use":state.source==="sample"?"Sample":"";
+  $("#results").hidden=state.source==="none";
   $("#cStories").textContent=d.stories.length?d.stories.length:"";
   $("#cTasks").textContent=d.tasks.length?d.tasks.length:"";
   renderBrief(d); renderQuestions(d); renderStories(d); renderTasks(d); renderTimeline(d);
