@@ -350,6 +350,29 @@ nav.tabs .count{display:inline-block;animation:pop .5s cubic-bezier(.3,1.4,.5,1)
 .spot::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),rgba(15,95,92,.13),transparent 62%)}
 .spot:hover::before{opacity:1}
 nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,var(--accent),#4CC9B8);transition:left .45s cubic-bezier(.2,.8,.2,1),width .45s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+
+/* ===== busy overlay ===== */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ovin{from{opacity:0}to{opacity:1}}
+@keyframes cardin{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes indet{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+.busy-ov{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:16px;background:rgba(12,22,28,.48);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);animation:ovin .25s ease both}
+.busy-ov[hidden]{display:none}
+.busy-card{width:min(440px,100%);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px 24px 18px;box-shadow:0 30px 80px rgba(0,0,0,.28);animation:cardin .4s cubic-bezier(.2,.8,.2,1) both}
+.busy-head{display:flex;align-items:center;gap:12px}
+.busy-head h2{font-size:18px;font-weight:600}
+.busy-spin{flex:0 0 22px;width:22px;height:22px;border-radius:50%;border:3px solid var(--accent-soft);border-top-color:var(--accent);animation:spin .9s linear infinite}
+.busy-sub{color:var(--muted);font-size:13.5px;margin-top:8px;min-height:20px}
+.busy-steps{list-style:none;margin:18px 0 16px;padding:0;display:grid;gap:12px}
+.busy-steps li{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--faint);transition:color .3s}
+.busy-steps i{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;transition:all .3s}
+.busy-steps li.act{color:var(--ink);font-weight:500}
+.busy-steps li.act i{border-color:var(--accent-soft);border-top-color:var(--accent);animation:spin .9s linear infinite}
+.busy-steps li.done{color:var(--muted)}
+.busy-steps li.done i{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.4 8.4l2.4 2.4 4.8-5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;border-color:var(--accent)}
+.busy-bar{height:5px;border-radius:5px;background:var(--sunken);overflow:hidden;position:relative}
+.busy-bar b{position:absolute;inset:0;width:40%;border-radius:5px;background:linear-gradient(90deg,var(--accent),#4CC9B8);animation:indet 1.5s ease-in-out infinite}
+.busy-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -475,6 +498,19 @@ nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius
   <footer class="site"><span>Brief to Backlog · Designed and built by Sophia Yeung</span><span>Live analysis powered by the Gemini API</span></footer>
 </div>
 
+<div class="busy-ov" id="busyOv" hidden role="alertdialog" aria-modal="true" aria-labelledby="busyT" aria-describedby="busyD">
+  <div class="busy-card">
+    <div class="busy-head"><span class="busy-spin" aria-hidden="true"></span><h2 id="busyT">Analysing your notes</h2></div>
+    <p class="busy-sub" id="busyD">The AI is working. This usually takes 20 to 60 seconds.</p>
+    <ol class="busy-steps">
+      <li data-s="1"><i></i><span>Drafting scope and open questions</span></li>
+      <li data-s="2"><i></i><span>Writing user stories and tasks</span></li>
+      <li data-s="3"><i></i><span>Building the timeline</span></li>
+    </ol>
+    <div class="busy-bar" aria-hidden="true"><b id="busyBar"></b></div>
+    <div class="busy-foot"><span id="busyTime">0s</span><button class="btn" id="busyStop" type="button">Stop</button></div>
+  </div>
+</div>
 <script>
 (function(){
 "use strict";
@@ -944,6 +980,15 @@ async function callApi(body){
 
 const confirmedFrom=prev=>[...(prev.confirmed||[]),...(prev.questions||[]).filter(q=>q.answer.trim()).map(q=>({question:q.question,answer:q.answer.trim()}))];
 
+/* ===== busy overlay ===== */
+const busyOv=$("#busyOv");
+let busyPrevFocus=null;
+function showBusy(title){ $("#busyT").textContent=title; $("#busyD").textContent="The AI is working. This usually takes 20 to 60 seconds."; $("#busyTime").textContent="0s"; setBusyStage(1); busyPrevFocus=document.activeElement; busyOv.hidden=false; $("#busyStop").focus(); }
+function setBusyStage(n){ busyOv.querySelectorAll(".busy-steps li").forEach(li=>{const k=+li.dataset.s; li.classList.toggle("done",k<n); li.classList.toggle("act",k===n);}); }
+function hideBusy(){ busyOv.hidden=true; if(busyPrevFocus&&busyPrevFocus.focus) try{busyPrevFocus.focus({preventScroll:true});}catch(e){} }
+function tickBusy(sec){ $("#busyTime").textContent=sec+"s"; if(sec>=30) $("#busyD").textContent="Still working. The free AI tier is busy, so it may retry automatically."; }
+$("#busyStop").addEventListener("click",()=>{ if(ctl) ctl.abort(); });
+document.addEventListener("keydown",e=>{ if(!busyOv.hidden&&e.key==="Escape"&&ctl) ctl.abort(); });
 async function runLive(mode){
   const refine=mode!=="initial";
   const notes=refine?(state.data.liveNotes||""):own.value.trim();
@@ -952,9 +997,9 @@ async function runLive(mode){
   ctl=new AbortController();
   const t0=Date.now(); let label="";
   const say=(m,el)=>{label=m; setStatus(m+"… "+Math.round((Date.now()-t0)/1000)+"s","",el||stEl);};
-  const timer=setInterval(()=>{if(label) say(label);},1000);
+  const timer=setInterval(()=>{tickBusy(Math.round((Date.now()-t0)/1000)); if(label) say(label);},1000);
   const busy=b=>{$("#btnAnalyse").disabled=b; $("#btnStop").hidden=!b; ["#btnRefine","#btnAssume"].forEach(id=>{const x=$(id); if(x) x.disabled=b;});};
-  busy(true);
+  busy(true); showBusy(refine?"Updating your plan":"Analysing your notes");
   try{
     const prev=state.data, confirmed=refine?confirmedFrom(prev):[];
     say("Step 1 of 2: drafting scope and open questions");
@@ -970,19 +1015,19 @@ async function runLive(mode){
     state.data=scope; state.source="ai"; state.done={};
     render(); showTab("brief"); toResults(); busy(true);
     if(scope.features.length){
-      say("Step 2 of 2: writing user stories and tasks", "#status");
+      say("Step 2 of 2: writing user stories and tasks", "#status"); setBusyStage(2);
       const plan=normalize(await callApi({step:"plan",notes,scope:{features:scope.features,users:scope.project.users,team:teamOf(scope),questions:scope.questions.map(q=>({question:q.question}))}}));
       const fids=new Set(scope.features.map(f=>f.id));
       scope.stories=plan.stories.filter(s=>fids.has(s.featureId));
       scope.tasks=plan.tasks.filter(t=>fids.has(t.featureId));
-      label=""; save(); render();
+      label=""; setBusyStage(3); save(); render(); await new Promise(r=>setTimeout(r,700));
       setStatus(`Plan drafted: ${scope.features.length} features, ${scope.stories.length} user stories, ${scope.tasks.length} tasks.`,"");
     } else {label=""; save(); setStatus(`The notes need more detail before they can be scoped. ${scope.questions.length} clarifying questions are ready.`,"");}
   }catch(e){
     label="";
     if(e&&e.code==="cancelled") setStatus("Stopped.","",stEl);
     else setStatus((ERRS[e&&e.code]||ERRS.upstream)+(e&&e.status?` (Gemini ${e.status}${e.model?" · "+e.model:""}: ${e.detail||"no message"})`:""),"err",$(stEl)?stEl:"#status");
-  }finally{clearInterval(timer); busy(false); ctl=null;}
+  }finally{clearInterval(timer); busy(false); hideBusy(); ctl=null;}
 }
 
 function runPresetFollowUp(mode){
