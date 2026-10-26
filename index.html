@@ -200,7 +200,83 @@ pre.copy{width:100%;max-height:200px;overflow:auto;background:var(--sunken);padd
 .blank{padding:32px 18px;text-align:center;color:var(--muted);font-size:14px}
 .blank b{display:block;color:var(--ink);font-weight:600;margin-bottom:4px}
 footer.site{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--faint);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* ===== motion ===== */
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes growx{from{transform:scaleX(0);opacity:.2}to{transform:scaleX(1);opacity:1}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.18)}100%{transform:scale(1);opacity:1}}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(15,95,92,.38)}100%{box-shadow:0 0 0 18px rgba(15,95,92,0)}}
+@keyframes sheen{from{background-position:0% 50%}to{background-position:200% 50%}}
+@keyframes drift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(3%,2%,0) scale(1.08)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(15,95,92,.45)}50%{box-shadow:0 0 0 8px rgba(15,95,92,0)}}
+@keyframes sweep{from{transform:translateX(-120%) skewX(-20deg)}to{transform:translateX(220%) skewX(-20deg)}}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;background:radial-gradient(38% 38% at 18% 8%,rgba(15,95,92,.12),transparent 70%),radial-gradient(34% 34% at 88% 18%,rgba(70,130,190,.10),transparent 70%),radial-gradient(40% 40% at 60% 95%,rgba(15,95,92,.07),transparent 70%);animation:drift 26s ease-in-out infinite alternate}
+.top{animation:fadein .7s both}
+.brand h1{background:linear-gradient(90deg,var(--ink) 0%,var(--accent) 50%,var(--ink) 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s linear infinite}
+.brand p{animation:rise .7s .1s both}
+.input>.card{animation:rise .7s cubic-bezier(.2,.8,.2,1) both;transition:transform .3s,box-shadow .3s,border-color .3s}
+.input>.card:nth-child(1){animation-delay:.12s}.input>.card:nth-child(2){animation-delay:.24s}
+.input>.card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(15,95,92,.10);border-color:var(--accent)}
+.btn{transition:transform .2s,box-shadow .2s,border-color .2s,filter .2s,background .2s}
+.btn:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.10)}
+.btn:not(:disabled):active{transform:translateY(0) scale(.97)}
+.btn.primary{position:relative;overflow:hidden}
+.btn.primary::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:translateX(-120%) skewX(-20deg);pointer-events:none}
+.btn.primary:not(:disabled):hover::after{animation:sweep .9s ease}
+.btn.primary:disabled{animation:pulse 1.4s ease-in-out infinite}
+.results:not([hidden]){animation:rise .7s cubic-bezier(.2,.8,.2,1) both,glow 1.6s .25s ease-out 1}
+.pane:not([hidden]){animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+nav.tabs button{transition:color .25s,border-color .25s,background .25s}
+nav.tabs button:hover{background:var(--accent-soft)}
+nav.tabs .count{display:inline-block;animation:pop .5s cubic-bezier(.3,1.4,.5,1) both}
+.metric{animation:rise .55s both}.metric:nth-child(2){animation-delay:.08s}.metric:nth-child(3){animation-delay:.16s}.metric:nth-child(4){animation-delay:.24s}
+.bar{transform-origin:left center;animation:growx .7s cubic-bezier(.2,.8,.2,1) both}
+.blab{animation:fadein .5s both}
+.grow:nth-child(1) .bar{animation-delay:0.19s}.grow:nth-child(1) .blab{animation-delay:0.59s}
+.grow:nth-child(2) .bar{animation-delay:0.23s}.grow:nth-child(2) .blab{animation-delay:0.63s}
+.grow:nth-child(3) .bar{animation-delay:0.27s}.grow:nth-child(3) .blab{animation-delay:0.67s}
+.grow:nth-child(4) .bar{animation-delay:0.31s}.grow:nth-child(4) .blab{animation-delay:0.71s}
+.grow:nth-child(5) .bar{animation-delay:0.35s}.grow:nth-child(5) .blab{animation-delay:0.75s}
+.grow:nth-child(6) .bar{animation-delay:0.39s}.grow:nth-child(6) .blab{animation-delay:0.79s}
+.grow:nth-child(7) .bar{animation-delay:0.43s}.grow:nth-child(7) .blab{animation-delay:0.83s}
+.grow:nth-child(8) .bar{animation-delay:0.47s}.grow:nth-child(8) .blab{animation-delay:0.87s}
+.grow:nth-child(9) .bar{animation-delay:0.51s}.grow:nth-child(9) .blab{animation-delay:0.91s}
+.grow:nth-child(10) .bar{animation-delay:0.55s}.grow:nth-child(10) .blab{animation-delay:0.95s}
+.grow:nth-child(11) .bar{animation-delay:0.59s}.grow:nth-child(11) .blab{animation-delay:0.99s}
+.grow:nth-child(12) .bar{animation-delay:0.63s}.grow:nth-child(12) .blab{animation-delay:1.03s}
+.grow:nth-child(13) .bar{animation-delay:0.67s}.grow:nth-child(13) .blab{animation-delay:1.07s}
+.grow:nth-child(14) .bar{animation-delay:0.71s}.grow:nth-child(14) .blab{animation-delay:1.11s}
+.grow:nth-child(15) .bar{animation-delay:0.75s}.grow:nth-child(15) .blab{animation-delay:1.15s}
+.grow:nth-child(16) .bar{animation-delay:0.79s}.grow:nth-child(16) .blab{animation-delay:1.19s}
+.grow:nth-child(17) .bar{animation-delay:0.83s}.grow:nth-child(17) .blab{animation-delay:1.23s}
+.grow:nth-child(18) .bar{animation-delay:0.87s}.grow:nth-child(18) .blab{animation-delay:1.27s}
+.grow:nth-child(19) .bar{animation-delay:0.91s}.grow:nth-child(19) .blab{animation-delay:1.31s}
+.grow:nth-child(20) .bar{animation-delay:0.95s}.grow:nth-child(20) .blab{animation-delay:1.35s}
+.grow:nth-child(21) .bar{animation-delay:0.99s}.grow:nth-child(21) .blab{animation-delay:1.39s}
+.grow:nth-child(22) .bar{animation-delay:1.03s}.grow:nth-child(22) .blab{animation-delay:1.43s}
+.grow:nth-child(23) .bar{animation-delay:1.07s}.grow:nth-child(23) .blab{animation-delay:1.47s}
+.grow:nth-child(24) .bar{animation-delay:1.11s}.grow:nth-child(24) .blab{animation-delay:1.51s}
+.grow:nth-child(25) .bar{animation-delay:1.15s}.grow:nth-child(25) .blab{animation-delay:1.55s}
+.grow:nth-child(26) .bar{animation-delay:1.19s}.grow:nth-child(26) .blab{animation-delay:1.59s}
+.grow:nth-child(27) .bar{animation-delay:1.23s}.grow:nth-child(27) .blab{animation-delay:1.63s}
+.grow:nth-child(28) .bar{animation-delay:1.27s}.grow:nth-child(28) .blab{animation-delay:1.67s}
+.grow:nth-child(29) .bar{animation-delay:1.31s}.grow:nth-child(29) .blab{animation-delay:1.71s}
+.grow:nth-child(30) .bar{animation-delay:1.35s}.grow:nth-child(30) .blab{animation-delay:1.75s}
+.grow:nth-child(31) .bar{animation-delay:1.39s}.grow:nth-child(31) .blab{animation-delay:1.79s}
+.grow:nth-child(32) .bar{animation-delay:1.43s}.grow:nth-child(32) .blab{animation-delay:1.83s}
+.grow:nth-child(33) .bar{animation-delay:1.47s}.grow:nth-child(33) .blab{animation-delay:1.87s}
+.grow:nth-child(34) .bar{animation-delay:1.51s}.grow:nth-child(34) .blab{animation-delay:1.91s}
+.grow:nth-child(35) .bar{animation-delay:1.55s}.grow:nth-child(35) .blab{animation-delay:1.95s}
+.grow:nth-child(36) .bar{animation-delay:1.59s}.grow:nth-child(36) .blab{animation-delay:1.99s}
+.grow:nth-child(37) .bar{animation-delay:1.63s}.grow:nth-child(37) .blab{animation-delay:2.03s}
+.grow:nth-child(38) .bar{animation-delay:1.67s}.grow:nth-child(38) .blab{animation-delay:2.07s}
+.grow:nth-child(39) .bar{animation-delay:1.71s}.grow:nth-child(39) .blab{animation-delay:2.11s}
+.grow:nth-child(40) .bar{animation-delay:1.75s}.grow:nth-child(40) .blab{animation-delay:2.15s}
+.group>.card,.brief>.card{transition:box-shadow .3s}
+.group>.card:hover,.brief>.card:hover{box-shadow:0 6px 20px rgba(0,0,0,.06)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.brand h1{color:var(--ink);background:none}}
 </style>
 </head>
 <body>
