@@ -228,6 +228,7 @@ footer.site{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);fo
         <div class="btns">
           <button class="btn primary" id="btnAnalyse">Analyse with AI</button>
           <button class="btn" id="btnStop" hidden>Stop</button>
+          <button class="btn" id="btnReset" title="Clear your saved notes and results in this browser">Reset</button>
           <span class="hint" id="charCount"></span>
         </div>
         <p class="hint">Uses Google's Gemini API free tier: usage is limited and inputs may be used by Google to improve its products. Don't paste confidential information.</p>
@@ -707,6 +708,7 @@ const count=()=>{$("#charCount").textContent=own.value.length?own.value.length.t
 count();
 own.addEventListener("input",()=>{state.ownNotes=own.value; save(); count();});
 const toResults=()=>{const r=$("#results"); if(r.getBoundingClientRect().top>window.innerHeight*0.6) r.scrollIntoView({behavior:"smooth",block:"start"});};
+$("#btnReset").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){} location.reload();});
 $("#btnSample").addEventListener("click",()=>{
   const k=scenSel.value;
   state.data=fixData(clone(SCEN[k].data)); state.source="sample"; state.done={};
