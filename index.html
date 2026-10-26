@@ -970,12 +970,26 @@ function normalize(r){
 }
 
 async function callApi(body){
-  let r;
-  try{r=await fetch("/api/plan",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl.signal});}
-  catch(e){throw {code:e.name==="AbortError"?"cancelled":"upstream"};}
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok) throw {code:j.error||"upstream",status:j.status,detail:j.detail,model:j.model};
-  return j.data;
+  const waitRetry=()=>new Promise((res,rej)=>{
+    $("#busyD").textContent="Gemini is busy. Retrying automatically…";
+    const t=setTimeout(res,5000);
+    ctl.signal.addEventListener("abort",()=>{clearTimeout(t); rej({code:"cancelled"});},{once:true});
+  });
+  for(let attempt=0;;attempt++){
+    const t0=Date.now(); let r;
+    try{r=await fetch("/api/plan",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl.signal});}
+    catch(e){
+      if(e.name==="AbortError") throw {code:"cancelled"};
+      if(attempt<1){await waitRetry(); continue;}
+      throw {code:"upstream"};
+    }
+    const j=await r.json().catch(()=>({}));
+    if(r.ok) return j.data;
+    // One more try when the service was briefly overloaded (not for quota errors, and not after a long wait).
+    const busyErr=j.error!=="quota"&&(r.status===502||r.status===503||r.status===504);
+    if(busyErr&&attempt<1&&Date.now()-t0<25000){await waitRetry(); continue;}
+    throw {code:j.error||"upstream",status:j.status,detail:j.detail,model:j.model};
+  }
 }
 
 const confirmedFrom=prev=>[...(prev.confirmed||[]),...(prev.questions||[]).filter(q=>q.answer.trim()).map(q=>({question:q.question,answer:q.answer.trim()}))];
