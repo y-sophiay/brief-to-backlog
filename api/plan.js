@@ -1,4 +1,4 @@
-// Brief to Backlog – Vercel function that calls the Gemini API.
+// Brief to Backlog – Vercel function that calls the Gemini API, with an optional backup provider.
 // The API key lives in the Vercel environment variable GEMINI_API_KEY and never reaches the browser.
 // Prompts are built here, so the endpoint can't be used as a general-purpose AI proxy.
 
@@ -7,11 +7,22 @@ const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const FALLBACK = process.env.GEMINI_FALLBACK_MODEL === "none" ? null : (process.env.GEMINI_FALLBACK_MODEL || "gemini-3.7-flash");
 const MAX_NOTES = 4000;
 const THINKING = process.env.GEMINI_THINKING === "default" ? null : (process.env.GEMINI_THINKING || "minimal");
-// Extra models tried after the main and fallback ones (comma-separated; "none" disables).
+// Extra Gemini models tried after the main and fallback ones (comma-separated; "none" disables).
 const EXTRA = (process.env.GEMINI_EXTRA_MODELS ?? "gemini-3.1-flash-lite").split(",").map(x => x.trim()).filter(x => x && x !== "none");
-// Attempt order: main model twice, then the others, then the cycle repeats until the time budget runs out.
-const ORDER = [MODEL, MODEL, ...new Set([FALLBACK, ...EXTRA].filter(x => x && x !== MODEL))];
-const MAX_ATTEMPTS = 10;
+// Optional backup provider (any OpenAI-compatible chat API). Defaults to Groq's free tier.
+const BACKUP_KEY = process.env.BACKUP_API_KEY || process.env.GROQ_API_KEY || "";
+const BACKUP_URL = (process.env.BACKUP_BASE_URL || "https://api.groq.com/openai/v1").replace(/\/$/, "");
+const BACKUP_MODEL = process.env.BACKUP_MODEL || "llama-3.3-70b-versatile";
+const BACKUP_MAX_TOKENS = parseInt(process.env.BACKUP_MAX_TOKENS || "5500", 10);
+// Attempt order: Gemini main twice, Gemini fallback, backup, then the rest; the cycle repeats until the time budget runs out.
+const GEM = [...new Set([FALLBACK, ...EXTRA].filter(x => x && x !== MODEL))];
+const ORDER = [
+  { p: "g", m: MODEL }, { p: "g", m: MODEL }, ...(GEM[0] ? [{ p: "g", m: GEM[0] }] : []),
+  ...(BACKUP_KEY ? [{ p: "b", m: BACKUP_MODEL }] : []),
+  ...GEM.slice(1).map(m => ({ p: "g", m })), { p: "g", m: MODEL },
+  ...(BACKUP_KEY ? [{ p: "b", m: BACKUP_MODEL }] : []),
+];
+const MAX_ATTEMPTS = 12;
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
 const BUDGET_MS = 50000; // vercel.json allows this function 60 s
 const PER_CALL_MS = 25000;
@@ -33,45 +44,75 @@ async function callGemini(model, prompt, thinkingLevel, timeoutMs = PER_CALL_MS)
   }
 }
 
-// Cycle through the models, backing off between attempts, until one answers or the time budget is spent.
+async function callBackup(model, prompt, timeoutMs) {
+  try {
+    return await fetch(`${BACKUP_URL}/chat/completions`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${BACKUP_KEY}` },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: "You reply with one valid JSON object only, with no commentary or code fences." },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.3,
+        max_tokens: BACKUP_MAX_TOKENS,
+        response_format: { type: "json_object" },
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: { message: `No response within ${Math.round(timeoutMs / 1000)} s` } }), { status: 504 });
+  }
+}
+
+// Cycle through the providers and models, backing off between attempts, until one answers or the time budget is spent.
 async function generate(prompt) {
   const t0 = Date.now();
   let last = { status: 0, detail: "", model: MODEL };
   const log = [];
+  const dead = new Set(); // providers whose key was rejected
   for (let k = 0; k < MAX_ATTEMPTS; k++) {
+    const entry = ORDER[k % ORDER.length];
+    if (dead.has(entry.p)) { if (ORDER.every(o => dead.has(o.p))) break; continue; }
     if (k > 0) {
       if (BUDGET_MS - (Date.now() - t0) < 10000) break; // not enough time left for another attempt
-      await sleep(Math.min(600 + k * 600, 3500));
+      await sleep(Math.min(500 + k * 500, 3000));
     }
     const left = BUDGET_MS - (Date.now() - t0);
     if (k > 0 && left < 8000) break;
-    const model = ORDER[k % ORDER.length];
     const timeout = Math.max(6000, Math.min(PER_CALL_MS, left - 1500));
-    let res = await callGemini(model, prompt, THINKING, timeout);
-    if (res.status === 400 && THINKING) {
-      // Some models don't accept this thinking level; retry once with the model's default.
-      const t = await res.text();
-      if (/thinking/i.test(t)) res = await callGemini(model, prompt, null, timeout);
-      else res = new Response(t, { status: 400 });
+    const label = entry.p === "b" ? `backup:${entry.m}` : entry.m;
+    let res;
+    if (entry.p === "b") res = await callBackup(entry.m, prompt, timeout);
+    else {
+      res = await callGemini(entry.m, prompt, THINKING, timeout);
+      if (res.status === 400 && THINKING) {
+        // Some models don't accept this thinking level; retry once with the model's default.
+        const t = await res.text();
+        if (/thinking/i.test(t)) res = await callGemini(entry.m, prompt, null, timeout);
+        else res = new Response(t, { status: 400 });
+      }
     }
     if (!res.ok) {
       const raw = await res.text();
       let detail = "";
       try { detail = JSON.parse(raw)?.error?.message || ""; } catch { detail = raw.slice(0, 200); }
-      last = { status: res.status, detail: detail.slice(0, 300), model };
-      log.push(`${model}:${res.status}`);
-      console.error("Gemini error", model, res.status, detail);
-      if (res.status === 401 || res.status === 403) break; // bad key or no access: no model will work
+      last = { status: res.status, detail: detail.slice(0, 300), model: label };
+      log.push(`${label}:${res.status}`);
+      console.error("AI error", label, res.status, detail);
+      if (res.status === 401 || res.status === 403) dead.add(entry.p); // bad key: skip this provider from now on
       continue; // overloaded, rate-limited or unknown model: try the next one
     }
     const out = await res.json();
-    const cand = out?.candidates?.[0];
-    const text = cand?.content?.parts?.map(p => p.text || "").join("") || "";
+    let text, finish;
+    if (entry.p === "b") { const c = out?.choices?.[0]; text = c?.message?.content || ""; finish = c?.finish_reason; }
+    else { const c = out?.candidates?.[0]; text = c?.content?.parts?.map(x => x.text || "").join("") || ""; finish = c?.finishReason; }
     const data = parseLoose(text);
-    if (data) return { data, meta: { model, attempts: k + 1, ms: Date.now() - t0, log } };
-    last = { status: 200, detail: `Unusable reply (finish reason: ${cand?.finishReason || "none"})`, model, invalid: true };
-    log.push(`${model}:invalid_json`);
-    console.error("Unparseable reply", model, cand?.finishReason, text.slice(0, 300));
+    if (data) return { data, meta: { model: label, attempts: k + 1, ms: Date.now() - t0, log } };
+    last = { status: 200, detail: `Unusable reply (finish reason: ${finish || "none"})`, model: label, invalid: true };
+    log.push(`${label}:invalid_json`);
+    console.error("Unparseable reply", label, finish, text.slice(0, 300));
   }
   return { error: last, meta: { attempts: log.length, ms: Date.now() - t0, log } };
 }

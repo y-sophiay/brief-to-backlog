@@ -428,7 +428,7 @@ nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius
       </div>
     </div>
     <div class="card">
-      <div class="card-h"><h2>Your own notes</h2><span class="hint">Live AI · Gemini</span></div>
+      <div class="card-h"><h2>Your own notes</h2><span class="hint">Live AI</span></div>
       <div class="card-b" style="display:grid;gap:12px">
         <label class="label" for="ownNotes" hidden>Meeting notes</label>
         <textarea id="ownNotes" spellcheck="false" maxlength="4000" placeholder="Paste rough notes from a stakeholder meeting: who needs what, pain points, deadlines, team size…"></textarea>
@@ -438,7 +438,7 @@ nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius
           <button class="btn" id="btnReset" title="Clear your saved notes and results in this browser">Reset</button>
           <span class="hint" id="charCount"></span>
         </div>
-        <p class="hint">Uses Google's Gemini API free tier: usage is limited and inputs may be used by Google to improve its products. Don't paste confidential information.</p>
+        <p class="hint">Uses free-tier AI services (Google Gemini, with Groq as backup): usage is limited and providers may use inputs to improve their products. Don't paste confidential information.</p>
       </div>
     </div>
   </section>
@@ -495,7 +495,7 @@ nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius
     </div>
   </section>
 
-  <footer class="site"><span>Brief to Backlog · Designed and built by Sophia Yeung</span><span>Live analysis powered by the Gemini API</span></footer>
+  <footer class="site"><span>Brief to Backlog · Designed and built by Sophia Yeung</span><span>Live analysis powered by Google Gemini, with Groq as backup</span></footer>
 </div>
 
 <div class="busy-ov" id="busyOv" hidden role="alertdialog" aria-modal="true" aria-labelledby="busyT" aria-describedby="busyD">
@@ -971,7 +971,7 @@ function normalize(r){
 
 async function callApi(body){
   const waitRetry=()=>new Promise((res,rej)=>{
-    $("#busyD").textContent="Gemini is busy. Retrying automatically…";
+    $("#busyD").textContent="The AI service is busy. Retrying automatically…";
     const t=setTimeout(res,5000);
     ctl.signal.addEventListener("abort",()=>{clearTimeout(t); rej({code:"cancelled"});},{once:true});
   });
@@ -1040,7 +1040,7 @@ async function runLive(mode){
   }catch(e){
     label="";
     if(e&&e.code==="cancelled") setStatus("Stopped.","",stEl);
-    else setStatus((ERRS[e&&e.code]||ERRS.upstream)+(e&&e.status?` (Gemini ${e.status}${e.model?" · "+e.model:""}: ${e.detail||"no message"})`:""),"err",$(stEl)?stEl:"#status");
+    else setStatus((ERRS[e&&e.code]||ERRS.upstream)+(e&&e.status?` (${e.status}${e.model?" · "+e.model:""}: ${e.detail||"no message"})`:""),"err",$(stEl)?stEl:"#status");
   }finally{clearInterval(timer); busy(false); hideBusy(); ctl=null;}
 }
 
