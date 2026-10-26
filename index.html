@@ -88,7 +88,7 @@ select{cursor:pointer}
 .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 8px;background:var(--surface)}
 nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--surface);z-index:10}
 nav.tabs button{border:0;background:none;padding:12px 18px;font-size:16px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
-nav.tabs button[aria-selected="true"]{color:var(--accent);border-bottom:3px solid var(--accent);font-weight:600}
+nav.tabs button[aria-selected="true"]{color:var(--accent);border-bottom:3px solid transparent;font-weight:600}
 nav.tabs .count{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:0 7px;margin-left:6px}
 nav.tabs button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;line-height:1.25}
 nav.tabs .td{font-size:12px;font-weight:400;color:var(--faint);margin-top:2px}
@@ -214,9 +214,7 @@ footer.site{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);fo
 @keyframes sweep{from{transform:translateX(-120%) skewX(-20deg)}to{transform:translateX(220%) skewX(-20deg)}}
 body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;background:radial-gradient(38% 38% at 18% 8%,rgba(15,95,92,.12),transparent 70%),radial-gradient(34% 34% at 88% 18%,rgba(70,130,190,.10),transparent 70%),radial-gradient(40% 40% at 60% 95%,rgba(15,95,92,.07),transparent 70%);animation:drift 26s ease-in-out infinite alternate}
 .top{animation:fadein .7s both}
-.brand h1{background:linear-gradient(90deg,var(--ink) 0%,var(--accent) 50%,var(--ink) 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s linear infinite}
-.brand p{animation:rise .7s .1s both}
-.input>.card{animation:rise .7s cubic-bezier(.2,.8,.2,1) both;transition:transform .3s,box-shadow .3s,border-color .3s}
+.input>.card{position:relative;animation:rise .7s cubic-bezier(.2,.8,.2,1) both;transition:transform .3s,box-shadow .3s,border-color .3s}
 .input>.card:nth-child(1){animation-delay:.12s}.input>.card:nth-child(2){animation-delay:.24s}
 .input>.card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(15,95,92,.10);border-color:var(--accent)}
 .btn{transition:transform .2s,box-shadow .2s,border-color .2s,filter .2s,background .2s}
@@ -277,17 +275,92 @@ nav.tabs .count{display:inline-block;animation:pop .5s cubic-bezier(.3,1.4,.5,1)
 .group>.card,.brief>.card{transition:box-shadow .3s}
 .group>.card:hover,.brief>.card:hover{box-shadow:0 6px 20px rgba(0,0,0,.06)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.brand h1{color:var(--ink);background:none}}
+
+/* ===== hero ===== */
+@keyframes blurrise{from{opacity:0;transform:translateY(18px);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes bob{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.62)}}
+@keyframes hvgrow{0%,4%{transform:scaleX(0);opacity:.3}16%,82%{transform:scaleX(1);opacity:1}94%,100%{transform:scaleX(1);opacity:0}}
+@keyframes flowhl{0%,16%,100%{color:var(--muted);background:transparent;border-color:var(--line);transform:none}6%,12%{color:var(--accent);background:var(--accent-soft);border-color:var(--accent);transform:translateY(-3px)}}
+@keyframes dash{to{background-position:0 -14px}}
+.top{padding-block:18px 8px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo rect{transform-box:fill-box;transform-origin:bottom;animation:bob 2.6s ease-in-out infinite}
+.logo rect:nth-child(2){animation-delay:.3s}.logo rect:nth-child(3){animation-delay:.6s}
+.wm{font-weight:600;font-size:16px;letter-spacing:-.01em}
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;align-items:center;padding-block:36px 40px}
+.hero-copy>*{animation:blurrise .8s cubic-bezier(.2,.8,.2,1) both}
+.hero-copy>:nth-child(2){animation-delay:.08s}.hero-copy>:nth-child(3){animation-delay:.16s}.hero-copy>:nth-child(4){animation-delay:.24s}.hero-copy>:nth-child(5){animation-delay:.32s}
+.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hero h1{font-size:clamp(34px,5.2vw,56px);line-height:1.04;font-weight:650;letter-spacing:-.035em;margin-top:14px;text-wrap:balance}
+.shimmer{background:linear-gradient(110deg,var(--accent) 25%,#4CC9B8 40%,#6C8EF5 50%,#4CC9B8 60%,var(--accent) 75%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:sheen 5s linear infinite}
+.lede{font-size:16px;color:var(--muted);max-width:52ch;margin-top:16px;line-height:1.6}
+.hero-cta{margin-top:24px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:30px;font-size:12px}
+.flow span{border:1px solid var(--line);border-radius:999px;padding:3px 11px;color:var(--muted);background:var(--surface);animation:flowhl 9s ease-in-out infinite}
+.flow span:nth-of-type(2){animation-delay:1.2s}.flow span:nth-of-type(3){animation-delay:2.4s}.flow span:nth-of-type(4){animation-delay:3.6s}.flow span:nth-of-type(5){animation-delay:4.8s}
+.flow i{width:16px;height:1px;background:var(--faint);position:relative}
+.flow i::after{content:"";position:absolute;right:0;top:-3px;width:6px;height:6px;border-top:1px solid var(--faint);border-right:1px solid var(--faint);transform:rotate(45deg)}
+.hero-viz{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px rgba(15,95,92,.14),0 2px 6px rgba(0,0,0,.04);animation:blurrise .9s .2s cubic-bezier(.2,.8,.2,1) both;transform-style:preserve-3d}
+.hv-bar{display:flex;align-items:center;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--faint)}
+.hv-bar i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.hv-bar i:nth-child(1){background:#F0707A}.hv-bar i:nth-child(2){background:#F2B138}.hv-bar i:nth-child(3){background:#2FB67C}
+.hv-bar span{margin-left:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.hv-body{position:relative;padding:16px 16px 20px}
+.hv-row{display:grid;grid-template-columns:36% 1fr;align-items:center;gap:10px;height:34px;border-bottom:1px dashed var(--line)}
+.hv-row:last-of-type{border-bottom:0}
+.hv-row em{font-style:normal;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv-track{position:relative;height:100%}
+.hv-track b{position:absolute;top:50%;height:12px;margin-top:-6px;border-radius:3px;transform-origin:left center;animation:hvgrow 8s cubic-bezier(.2,.8,.2,1) infinite}
+.hv-track b.must{background:var(--p-must)}.hv-track b.should{background:var(--p-should)}
+.hv-track b.stk{background-color:var(--p-should);background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 3px,transparent 3px 6px)}
+.hv-row:nth-child(2) b{animation-delay:.3s}.hv-row:nth-child(3) b{animation-delay:.6s}.hv-row:nth-child(4) b{animation-delay:.9s}.hv-row:nth-child(5) b{animation-delay:1.2s}.hv-row:nth-child(6) b{animation-delay:1.5s}
+.hv-dl{position:absolute;top:12px;bottom:14px;left:calc(16px + 36% + 10px + (100% - 32px - 36% - 10px)*.93);width:0;border-left:2px dashed var(--danger);opacity:.7}
+.hv-chip{position:absolute;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--accent);box-shadow:0 8px 22px rgba(15,95,92,.18);animation:float 5s ease-in-out infinite}
+.hv-chip.c1{top:-14px;right:22px}.hv-chip.c2{bottom:-14px;left:26px;animation-delay:1.4s}.hv-chip.c3{top:78px;right:-14px;animation-delay:2.6s;color:var(--ok,#1E8A5A)}
+@media (max-width:900px){.hero{grid-template-columns:1fr;padding-block:24px 30px}.hv-chip.c3{right:6px}}
+/* spotlight + tab indicator */
+.spot{position:relative}
+.spot::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),rgba(15,95,92,.13),transparent 62%)}
+.spot:hover::before{opacity:1}
+nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,var(--accent),#4CC9B8);transition:left .45s cubic-bezier(.2,.8,.2,1),width .45s cubic-bezier(.2,.8,.2,1);pointer-events:none}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <h1>Brief to Backlog</h1>
-      <p>AI-assisted requirements analysis and delivery planning.</p>
+      <svg class="logo" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="14" width="6" height="11" rx="2" fill="#5B8DEF"/><rect x="11" y="7" width="6" height="18" rx="2" fill="#F2B138"/><rect x="19" y="3" width="6" height="22" rx="2" fill="#2FB67C"/></svg>
+      <span class="wm">Brief to Backlog</span>
     </div>
     <button class="btn primary" id="btnPlanTop" hidden>Download plan</button>
   </header>
+
+  <section class="hero" aria-label="Introduction">
+    <div class="hero-copy">
+      <p class="eyebrow">Requirements analysis · 4 outputs · Given / When / Then</p>
+      <h1>Turn messy meeting notes into a <span class="shimmer">delivery plan.</span></h1>
+      <p class="lede">Paste stakeholder notes and get a kickoff brief, clarifying questions, user stories with acceptance criteria, an owned task list and a working-day timeline.</p>
+      <div class="btns hero-cta">
+        <button class="btn primary" id="heroSample">Try a sample plan <span aria-hidden="true">&rarr;</span></button>
+        <button class="btn" id="heroOwn">Analyse my notes</button>
+      </div>
+      <div class="flow" aria-hidden="true"><span>Notes</span><i></i><span>Brief</span><i></i><span>User stories</span><i></i><span>Tasks</span><i></i><span>Timeline</span></div>
+    </div>
+    <div class="hero-viz spot" aria-hidden="true">
+      <div class="hv-bar"><i></i><i></i><i></i><span>delivery-plan · timeline</span></div>
+      <div class="hv-body">
+        <div class="hv-row"><em>Confirm barcode format</em><div class="hv-track"><b class="must" style="left:0%;width:20%"></b></div></div>
+        <div class="hv-row"><em>Design scanning screens</em><div class="hv-track"><b class="must" style="left:10%;width:26%"></b></div></div>
+        <div class="hv-row"><em>Build scan &amp; pick logging</em><div class="hv-track"><b class="must" style="left:30%;width:38%"></b></div></div>
+        <div class="hv-row"><em>Wrong-item alert</em><div class="hv-track"><b class="should" style="left:52%;width:22%"></b></div></div>
+        <div class="hv-row"><em>Outstanding orders report</em><div class="hv-track"><b class="should" style="left:64%;width:24%"></b></div></div>
+        <div class="hv-row"><em>Manager UAT &amp; sign-off</em><div class="hv-track"><b class="stk" style="left:84%;width:10%"></b></div></div>
+        <u class="hv-dl"></u>
+      </div>
+      <div class="hv-chip c1">5 user stories</div><div class="hv-chip c2">14 tasks</div><div class="hv-chip c3">10 days early</div>
+    </div>
+  </section>
 
   <section class="input" aria-label="Input">
     <div class="card">
@@ -318,6 +391,7 @@ nav.tabs .count{display:inline-block;animation:pop .5s cubic-bezier(.3,1.4,.5,1)
   <section class="results" id="results" aria-label="Plan">
     <div class="res-head"><h2 id="resTitle"></h2><span class="tag" id="resTag"></span></div>
     <nav class="tabs" role="tablist" aria-label="Plan sections">
+      <span class="ind" aria-hidden="true"></span>
       <button role="tab" id="tab-brief" data-tab="brief" aria-selected="true"><span class="tt">Brief</span><span class="td">Summary, scope &amp; open questions</span></button>
       <button role="tab" id="tab-stories" data-tab="stories" aria-selected="false"><span class="tt">User stories<span class="count" id="cStories"></span></span><span class="td">Given / When / Then acceptance criteria</span></button>
       <button role="tab" id="tab-tasks" data-tab="tasks" aria-selected="false"><span class="tt">Tasks<span class="count" id="cTasks"></span></span><span class="td">Owners, effort &amp; dependencies</span></button>
@@ -621,7 +695,7 @@ function render(){
   const d=state.data;
   $("#resTitle").textContent=d.project.name||(needsScope(d)?"No plan yet":"Untitled project");
   $("#resTag").textContent=state.source==="ai"?"AI draft · review before use":state.source==="sample"?"Sample":"";
-  $("#results").hidden=state.source==="none";
+  $("#results").hidden=state.source==="none"; requestAnimationFrame(moveInd);
   $("#cStories").textContent=d.stories.length?d.stories.length:"";
   $("#cTasks").textContent=d.tasks.length?d.tasks.length:"";
   renderBrief(d); renderQuestions(d); renderStories(d); renderTasks(d); renderTimeline(d);
@@ -723,7 +797,7 @@ function renderTimeline(d){
     <div class="metric"><div class="label">Forecast finish</div><div class="v">${sc.endIdx?fmtFull(sc.finish):"—"}</div><div class="s">${sc.endIdx} working days</div></div>
     <div class="metric"><div class="label">Against deadline</div><div class="v ${v.cls}">${v.txt}</div><div class="s">${v.sub}</div></div>
     <div class="metric"><div class="label">Tasks</div><div class="v">${sc.order.length}</div><div class="s">${sc.order.reduce((a,id)=>a+sc.out[id].task.days,0)} person-days</div></div>
-    <div class="metric"><div class="label">Delivery team</div><div class="v">${people} ${people>1?"people":"person"}</div><div class="s">${sc.team.length} role${sc.team.length>1?"s":""}</div></div></div>`;
+    <div class="metric"><div class="label">Delivery team</div><div class="v">${people} ${people>1?"people":"person"}</div><div class="s">${sc.team.length} role${sc.team.length>1?"s":""}</div></div></div>`; countUp($("#metricsOut"));
   const dl=parseD(d.project.deadline);
   const lastCal=Math.max(sc.finish,dl||0)+4*DAY;
   const nDays=Math.round((lastCal-sc.start)/DAY)+1, W=nDays*COL, cal=t=>Math.round((t-sc.start)/DAY);
@@ -751,7 +825,7 @@ function renderTimeline(d){
 }
 
 /* ================= interactions ================= */
-function showTab(t){state.tab=t; ["brief","stories","tasks","timeline"].forEach(x=>{$("#pane-"+x).hidden=x!==t; $("#tab-"+x).setAttribute("aria-selected",x===t)}); save();}
+function showTab(t){state.tab=t; ["brief","stories","tasks","timeline"].forEach(x=>{$("#pane-"+x).hidden=x!==t; $("#tab-"+x).setAttribute("aria-selected",x===t)}); save(); moveInd();}
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
 document.querySelectorAll("[data-sv]").forEach(b=>b.addEventListener("click",()=>{state.sv=b.dataset.sv; save(); renderStories(state.data);}));
 document.querySelectorAll("[data-gv]").forEach(b=>b.addEventListener("click",()=>{state.gv=b.dataset.gv; save(); renderTimeline(state.data);}));
@@ -788,6 +862,14 @@ const count=()=>{$("#charCount").textContent=own.value.length?own.value.length.t
 count();
 own.addEventListener("input",()=>{state.ownNotes=own.value; save(); count();});
 const toResults=()=>{const r=$("#results"); if(r.getBoundingClientRect().top>window.innerHeight*0.6) r.scrollIntoView({behavior:"smooth",block:"start"});};
+/* ===== motion helpers ===== */
+const REDUCED=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+function moveInd(){const nav=document.querySelector("nav.tabs"); if(!nav) return; const ind=nav.querySelector(".ind"), b=nav.querySelector('[aria-selected="true"]'); if(!ind||!b||!b.offsetWidth) return; ind.style.left=b.offsetLeft+"px"; ind.style.width=b.offsetWidth+"px";}
+function countUp(root){ if(REDUCED||!root) return; root.querySelectorAll(".v").forEach(el=>{const m=el.textContent.match(/^(\d+)(.*)$/); if(!m||/\d{4}$/.test(m[2])) return; const n=+m[1], rest=m[2], t0=performance.now(); const step=t=>{const k=Math.min(1,(t-t0)/800); el.textContent=Math.round(n*(1-Math.pow(1-k,3)))+rest; if(k<1) requestAnimationFrame(step);}; el.textContent="0"+rest; requestAnimationFrame(step);});}
+document.addEventListener("pointermove",e=>{const c=e.target.closest&&e.target.closest(".spot"); if(!c) return; const r=c.getBoundingClientRect(); c.style.setProperty("--mx",(e.clientX-r.left)+"px"); c.style.setProperty("--my",(e.clientY-r.top)+"px");});
+window.addEventListener("resize",moveInd); window.addEventListener("load",moveInd); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(moveInd);
+$("#heroSample").addEventListener("click",()=>{$("#btnSample").click();});
+$("#heroOwn").addEventListener("click",()=>{own.scrollIntoView({behavior:REDUCED?"auto":"smooth",block:"center"}); setTimeout(()=>own.focus({preventScroll:true}),350);});
 $("#btnReset").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){} location.reload();});
 $("#btnSample").addEventListener("click",()=>{
   const k=scenSel.value;
