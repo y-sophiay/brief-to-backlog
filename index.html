@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Brief to Backlog: AI-assisted requirements analysis and delivery planning. Turn stakeholder notes into a scoped, prioritised delivery plan.">
 <title>Brief to Backlog</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2028%2028%22%3E%3Crect%20width%3D%2228%22%20height%3D%2228%22%20rx%3D%227%22%20fill%3D%22%230F5F5C%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%209.4l1.7%201.7L12%207.8M7%2015.4l1.7%201.7%203.3-3.3%22/%3E%3Cpath%20d%3D%22M7%2021.4l1.7%201.7%203.3-3.3%22%20opacity%3D%22.55%22/%3E%3Cpath%20d%3D%22M15.5%209.4H21M15.5%2015.4H21%22/%3E%3Cpath%20d%3D%22M15.5%2021.4H21%22%20opacity%3D%22.55%22/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -296,12 +297,14 @@ nav.tabs .count{display:inline-block;animation:pop .5s cubic-bezier(.3,1.4,.5,1)
 .logo .ck{stroke-dasharray:14;stroke-dashoffset:14;animation:draw .5s ease forwards}
 .logo .k1{animation-delay:.1s}.logo .l1{animation-delay:.25s}.logo .k2{animation-delay:.4s}.logo .l2{animation-delay:.55s}.logo .k3{animation-delay:.7s}.logo .l3{animation-delay:.85s}
 .wm{font-weight:600;font-size:16px;letter-spacing:-.01em}
-.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:44px;align-items:center;padding-block:34px 38px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:40px;align-items:center;padding-block:34px 38px}
 .hero-copy>*{animation:blurrise .8s cubic-bezier(.2,.8,.2,1) both}
 .hero-copy>:nth-child(2){animation-delay:.08s}.hero-copy>:nth-child(3){animation-delay:.16s}.hero-copy>:nth-child(4){animation-delay:.24s}.hero-copy>:nth-child(5){animation-delay:.32s}
 .kicker{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent)}
 .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(15,95,92,.5);animation:pulse 2s ease-out infinite}
-.hero h1{font-size:clamp(30px,3.5vw,42px);line-height:1.12;font-weight:600;letter-spacing:-.025em;margin-top:12px;text-wrap:balance}
+.ln{display:block}
+@media (min-width:981px){.ln{white-space:nowrap}}
+.hero h1{font-size:clamp(28px,3vw,38px);line-height:1.12;font-weight:600;letter-spacing:-.025em;margin-top:12px;text-wrap:balance}
 .hl{background:linear-gradient(transparent 60%,rgba(47,182,124,.30) 60% 92%,transparent 92%) no-repeat 0 0/0 100%;animation:hlDraw 1s .6s cubic-bezier(.2,.8,.2,1) forwards;padding-inline:2px;margin-inline:-2px}
 .lede{font-size:15.5px;color:var(--muted);max-width:50ch;margin-top:14px;line-height:1.6}
 .hero-cta{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:22px}
@@ -312,12 +315,16 @@ nav.tabs .count{display:inline-block;animation:pop .5s cubic-bezier(.3,1.4,.5,1)
 .proof li::before{content:"";flex:0 0 16px;height:16px;border-radius:50%;background:var(--accent-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.6 8.4l2.3 2.3 4.5-4.8' fill='none' stroke='%230F5F5C' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat}
 /* messy notes -> structured output */
 .xf{display:grid;grid-template-columns:minmax(0,.8fr) 34px minmax(0,1.35fr);align-items:center;animation:blurrise .9s .2s cubic-bezier(.2,.8,.2,1) both}
-.xf-notes{position:relative;background:#FFF7DB;color:#5B4A12;border:1px solid #F0DFA0;border-radius:6px;padding:14px 14px 16px;transform:rotate(-1.8deg);box-shadow:0 14px 30px rgba(120,95,20,.16);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
-.xf-notes:hover{transform:rotate(0)}
-.xf-tag{display:block;font-size:11px;font-weight:600;color:#9A7B14;margin-bottom:8px}
-.xf-notes p{font-size:13px;line-height:1.4;margin:0 0 7px;font-style:italic}
-.xf-notes mark{background:linear-gradient(transparent 55%,rgba(240,176,40,.55) 55%) no-repeat 0 0/0 100%;color:inherit;animation:xfm 11s infinite}
 .xf-notes .n1{animation:xfn0 11s infinite}.xf-notes .n2{animation:xfn1 11s infinite}.xf-notes .n3{animation:xfn2 11s infinite}.xf-notes .n4{animation:xfn3 11s infinite}
+.xf-notes{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 10px 26px rgba(15,95,92,.08)}
+.xf-nh{display:flex;align-items:center;gap:8px;padding-bottom:9px;margin-bottom:9px;border-bottom:1px solid var(--line)}
+.xf-nh b{font-size:12.5px;font-weight:600;white-space:nowrap}
+.xf-nh em{margin-left:auto;font-style:normal;font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:10px;padding:0 7px}
+.xf-doc{width:11px;height:14px;border:1.5px solid var(--faint);border-radius:2px;position:relative;flex:0 0 auto}
+.xf-doc::before{content:"";position:absolute;left:2px;right:2px;top:3px;height:1.5px;background:var(--faint);box-shadow:0 3px 0 var(--faint),0 6px 0 var(--faint)}
+.xf-notes p{font-size:12.5px;line-height:1.4;margin:0 0 6px;color:var(--muted);padding-left:12px;position:relative}
+.xf-notes p::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:1.5px;background:var(--faint)}
+.xf-notes mark{background:linear-gradient(transparent 58%,rgba(217,162,27,.38) 58%) no-repeat 0 0/0 100%;color:var(--ink);animation:xfm 11s infinite}
 .xf-arrow{display:flex;justify-content:center;gap:3px}
 .xf-arrow i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:dots 1.4s ease-in-out infinite}
 .xf-arrow i:nth-child(2){animation-delay:.18s}.xf-arrow i:nth-child(3){animation-delay:.36s}
@@ -336,8 +343,6 @@ nav.tabs .count{display:inline-block;animation:pop .5s cubic-bezier(.3,1.4,.5,1)
 .xf-g{position:relative;width:100%;height:30px}
 .xf-g i{position:absolute;height:7px;border-radius:2px;background:var(--p-must);transform-origin:left center;animation:xfb 11s infinite}
 .xf-g i:nth-child(1){top:2px}.xf-g i:nth-child(2){top:12px;background:var(--p-should);animation-delay:.12s}.xf-g i:nth-child(3){top:22px;background:var(--p-should);animation-delay:.24s}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .xf-notes{background:#2B2614;color:#E8D9A0;border-color:#4A4020;box-shadow:0 14px 30px rgba(0,0,0,.4)}:root:not([data-theme="light"]) .xf-tag{color:#CDA83A}}
-:root[data-theme="dark"] .xf-notes{background:#2B2614;color:#E8D9A0;border-color:#4A4020;box-shadow:0 14px 30px rgba(0,0,0,.4)}:root[data-theme="dark"] .xf-tag{color:#CDA83A}
 @media (max-width:980px){.hero{grid-template-columns:1fr;gap:30px;padding-block:22px 30px}}
 @media (max-width:560px){.xf{grid-template-columns:1fr}.xf-arrow{transform:rotate(90deg);height:34px;align-items:center}.xf-card{grid-template-columns:92px minmax(0,1fr)}}
 /* spotlight + tab indicator */
@@ -360,7 +365,7 @@ nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius
   <section class="hero" aria-label="Introduction">
     <div class="hero-copy">
       <p class="kicker"><span class="dot"></span>AI-assisted requirements analysis</p>
-      <h1>Meeting notes in. A <span class="hl">buildable backlog</span> out.</h1>
+      <h1><span class="ln">Meeting notes in.</span> <span class="ln">A&nbsp;<span class="hl">buildable backlog</span> out.</span></h1>
       <p class="lede">Paste what stakeholders said. Get a kickoff brief, the questions to ask next, user stories with acceptance criteria, an owned task list and a working-day timeline.</p>
       <div class="hero-cta">
         <button class="btn primary" id="heroSample">Try a sample plan <span aria-hidden="true">&rarr;</span></button>
@@ -374,11 +379,11 @@ nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius
     </div>
     <div class="xf" aria-hidden="true">
       <div class="xf-notes spot">
-        <span class="xf-tag">Meeting notes</span>
+        <div class="xf-nh"><span class="xf-doc"></span><b>Meeting notes</b><em>Raw</em></div>
         <p class="n1">Manager says dispatch still runs off <mark>Excel</mark></p>
-        <p class="n2">wants pickers to scan barcodes on phones??</p>
-        <p class="n3">done <mark>before year-end</mark> (which one?)</p>
-        <p class="n4">courier integration &ndash; not urgent</p>
+        <p class="n2">Wants pickers to scan barcodes on phones</p>
+        <p class="n3">Done <mark>before year-end</mark> &ndash; which date?</p>
+        <p class="n4">Courier integration not urgent</p>
       </div>
       <div class="xf-arrow"><i></i><i></i><i></i></div>
       <div class="xf-out">
