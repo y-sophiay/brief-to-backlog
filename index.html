@@ -278,47 +278,68 @@ nav.tabs .count{display:inline-block;animation:pop .5s cubic-bezier(.3,1.4,.5,1)
 
 /* ===== hero ===== */
 @keyframes blurrise{from{opacity:0;transform:translateY(18px);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes bob{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.62)}}
-@keyframes hvgrow{0%,4%{transform:scaleX(0);opacity:.3}16%,82%{transform:scaleX(1);opacity:1}94%,100%{transform:scaleX(1);opacity:0}}
-@keyframes flowhl{0%,16%,100%{color:var(--muted);background:transparent;border-color:var(--line);transform:none}6%,12%{color:var(--accent);background:var(--accent-soft);border-color:var(--accent);transform:translateY(-3px)}}
-@keyframes dash{to{background-position:0 -14px}}
+@keyframes hlDraw{to{background-size:100% 100%}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes dots{0%{transform:translateX(-4px);opacity:0}30%,70%{opacity:1}100%{transform:translateX(10px);opacity:0}}
+@keyframes xfb{0%,50%{transform:scaleX(0)}60%,92%{transform:scaleX(1)}97%,100%{transform:scaleX(1);opacity:0}}
+@keyframes xfm{0%,14%{background-size:0 100%}22%,92%{background-size:100% 100%}97%,100%{background-size:100% 100%;opacity:.4}}
+@keyframes xfc0{0%,30%{opacity:0;transform:translateY(14px) scale(.96)}35%,92%{opacity:1;transform:none}97%,100%{opacity:0;transform:translateY(-4px)}}
+@keyframes xfc1{0%,39%{opacity:0;transform:translateY(14px) scale(.96)}44%,92%{opacity:1;transform:none}97%,100%{opacity:0;transform:translateY(-4px)}}
+@keyframes xfc2{0%,48%{opacity:0;transform:translateY(14px) scale(.96)}53%,92%{opacity:1;transform:none}97%,100%{opacity:0;transform:translateY(-4px)}}
+@keyframes xfc3{0%,57%{opacity:0;transform:translateY(14px) scale(.96)}62%,92%{opacity:1;transform:none}97%,100%{opacity:0;transform:translateY(-4px)}}
+@keyframes xfn0{0%,2%{opacity:0;transform:translateX(-8px)}6%,92%{opacity:1;transform:none}97%,100%{opacity:0}}
+@keyframes xfn1{0%,7%{opacity:0;transform:translateX(-8px)}11%,92%{opacity:1;transform:none}97%,100%{opacity:0}}
+@keyframes xfn2{0%,12%{opacity:0;transform:translateX(-8px)}16%,92%{opacity:1;transform:none}97%,100%{opacity:0}}
+@keyframes xfn3{0%,17%{opacity:0;transform:translateX(-8px)}21%,92%{opacity:1;transform:none}97%,100%{opacity:0}}
 .top{padding-block:18px 8px}
 .brand{display:flex;align-items:center;gap:10px}
-.logo rect{transform-box:fill-box;transform-origin:bottom;animation:bob 2.6s ease-in-out infinite}
-.logo rect:nth-child(2){animation-delay:.3s}.logo rect:nth-child(3){animation-delay:.6s}
+.logo .ck{stroke-dasharray:14;stroke-dashoffset:14;animation:draw .5s ease forwards}
+.logo .k1{animation-delay:.1s}.logo .l1{animation-delay:.25s}.logo .k2{animation-delay:.4s}.logo .l2{animation-delay:.55s}.logo .k3{animation-delay:.7s}.logo .l3{animation-delay:.85s}
 .wm{font-weight:600;font-size:16px;letter-spacing:-.01em}
-.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;align-items:center;padding-block:36px 40px}
+.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:44px;align-items:center;padding-block:34px 38px}
 .hero-copy>*{animation:blurrise .8s cubic-bezier(.2,.8,.2,1) both}
 .hero-copy>:nth-child(2){animation-delay:.08s}.hero-copy>:nth-child(3){animation-delay:.16s}.hero-copy>:nth-child(4){animation-delay:.24s}.hero-copy>:nth-child(5){animation-delay:.32s}
-.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.hero h1{font-size:clamp(34px,5.2vw,56px);line-height:1.04;font-weight:650;letter-spacing:-.035em;margin-top:14px;text-wrap:balance}
-.shimmer{background:linear-gradient(110deg,var(--accent) 25%,#4CC9B8 40%,#6C8EF5 50%,#4CC9B8 60%,var(--accent) 75%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:sheen 5s linear infinite}
-.lede{font-size:16px;color:var(--muted);max-width:52ch;margin-top:16px;line-height:1.6}
-.hero-cta{margin-top:24px}
-.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:30px;font-size:12px}
-.flow span{border:1px solid var(--line);border-radius:999px;padding:3px 11px;color:var(--muted);background:var(--surface);animation:flowhl 9s ease-in-out infinite}
-.flow span:nth-of-type(2){animation-delay:1.2s}.flow span:nth-of-type(3){animation-delay:2.4s}.flow span:nth-of-type(4){animation-delay:3.6s}.flow span:nth-of-type(5){animation-delay:4.8s}
-.flow i{width:16px;height:1px;background:var(--faint);position:relative}
-.flow i::after{content:"";position:absolute;right:0;top:-3px;width:6px;height:6px;border-top:1px solid var(--faint);border-right:1px solid var(--faint);transform:rotate(45deg)}
-.hero-viz{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px rgba(15,95,92,.14),0 2px 6px rgba(0,0,0,.04);animation:blurrise .9s .2s cubic-bezier(.2,.8,.2,1) both;transform-style:preserve-3d}
-.hv-bar{display:flex;align-items:center;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--faint)}
-.hv-bar i{width:9px;height:9px;border-radius:50%;background:var(--line)}
-.hv-bar i:nth-child(1){background:#F0707A}.hv-bar i:nth-child(2){background:#F2B138}.hv-bar i:nth-child(3){background:#2FB67C}
-.hv-bar span{margin-left:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.hv-body{position:relative;padding:16px 16px 20px}
-.hv-row{display:grid;grid-template-columns:36% 1fr;align-items:center;gap:10px;height:34px;border-bottom:1px dashed var(--line)}
-.hv-row:last-of-type{border-bottom:0}
-.hv-row em{font-style:normal;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hv-track{position:relative;height:100%}
-.hv-track b{position:absolute;top:50%;height:12px;margin-top:-6px;border-radius:3px;transform-origin:left center;animation:hvgrow 8s cubic-bezier(.2,.8,.2,1) infinite}
-.hv-track b.must{background:var(--p-must)}.hv-track b.should{background:var(--p-should)}
-.hv-track b.stk{background-color:var(--p-should);background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 3px,transparent 3px 6px)}
-.hv-row:nth-child(2) b{animation-delay:.3s}.hv-row:nth-child(3) b{animation-delay:.6s}.hv-row:nth-child(4) b{animation-delay:.9s}.hv-row:nth-child(5) b{animation-delay:1.2s}.hv-row:nth-child(6) b{animation-delay:1.5s}
-.hv-dl{position:absolute;top:12px;bottom:14px;left:calc(16px + 36% + 10px + (100% - 32px - 36% - 10px)*.93);width:0;border-left:2px dashed var(--danger);opacity:.7}
-.hv-chip{position:absolute;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--accent);box-shadow:0 8px 22px rgba(15,95,92,.18);animation:float 5s ease-in-out infinite}
-.hv-chip.c1{top:-14px;right:22px}.hv-chip.c2{bottom:-14px;left:26px;animation-delay:1.4s}.hv-chip.c3{top:78px;right:-14px;animation-delay:2.6s;color:var(--ok,#1E8A5A)}
-@media (max-width:900px){.hero{grid-template-columns:1fr;padding-block:24px 30px}.hv-chip.c3{right:6px}}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent)}
+.kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(15,95,92,.5);animation:pulse 2s ease-out infinite}
+.hero h1{font-size:clamp(30px,3.5vw,42px);line-height:1.12;font-weight:600;letter-spacing:-.025em;margin-top:12px;text-wrap:balance}
+.hl{background:linear-gradient(transparent 60%,rgba(47,182,124,.30) 60% 92%,transparent 92%) no-repeat 0 0/0 100%;animation:hlDraw 1s .6s cubic-bezier(.2,.8,.2,1) forwards;padding-inline:2px;margin-inline:-2px}
+.lede{font-size:15.5px;color:var(--muted);max-width:50ch;margin-top:14px;line-height:1.6}
+.hero-cta{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:22px}
+.linkbtn{border:0;background:none;padding:4px 0;cursor:pointer;color:var(--ink);font-weight:500;font-size:14px;border-bottom:1px solid var(--faint);transition:color .2s,border-color .2s}
+.linkbtn:hover{color:var(--accent);border-color:var(--accent)}
+.proof{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:8px;font-size:13.5px;color:var(--muted)}
+.proof li{display:flex;align-items:center;gap:10px}
+.proof li::before{content:"";flex:0 0 16px;height:16px;border-radius:50%;background:var(--accent-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.6 8.4l2.3 2.3 4.5-4.8' fill='none' stroke='%230F5F5C' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat}
+/* messy notes -> structured output */
+.xf{display:grid;grid-template-columns:minmax(0,.8fr) 34px minmax(0,1.35fr);align-items:center;animation:blurrise .9s .2s cubic-bezier(.2,.8,.2,1) both}
+.xf-notes{position:relative;background:#FFF7DB;color:#5B4A12;border:1px solid #F0DFA0;border-radius:6px;padding:14px 14px 16px;transform:rotate(-1.8deg);box-shadow:0 14px 30px rgba(120,95,20,.16);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.xf-notes:hover{transform:rotate(0)}
+.xf-tag{display:block;font-size:11px;font-weight:600;color:#9A7B14;margin-bottom:8px}
+.xf-notes p{font-size:13px;line-height:1.4;margin:0 0 7px;font-style:italic}
+.xf-notes mark{background:linear-gradient(transparent 55%,rgba(240,176,40,.55) 55%) no-repeat 0 0/0 100%;color:inherit;animation:xfm 11s infinite}
+.xf-notes .n1{animation:xfn0 11s infinite}.xf-notes .n2{animation:xfn1 11s infinite}.xf-notes .n3{animation:xfn2 11s infinite}.xf-notes .n4{animation:xfn3 11s infinite}
+.xf-arrow{display:flex;justify-content:center;gap:3px}
+.xf-arrow i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:dots 1.4s ease-in-out infinite}
+.xf-arrow i:nth-child(2){animation-delay:.18s}.xf-arrow i:nth-child(3){animation-delay:.36s}
+.xf-out{display:grid;gap:10px}
+.xf-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:center;box-shadow:0 10px 26px rgba(15,95,92,.10);min-height:56px}
+.xf-card.c1{animation:xfc0 11s infinite cubic-bezier(.2,.8,.3,1.2)}.xf-card.c2{animation:xfc1 11s infinite cubic-bezier(.2,.8,.3,1.2)}.xf-card.c3{animation:xfc2 11s infinite cubic-bezier(.2,.8,.3,1.2)}.xf-card.c4{animation:xfc3 11s infinite cubic-bezier(.2,.8,.3,1.2)}
+.xf-h b{display:block;font-size:13px;font-weight:600}
+.xf-h em{display:inline-block;margin-top:3px;font-style:normal;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:0 8px}
+.xf-h em.ok{color:var(--ok);background:rgba(47,182,124,.14)}
+.xf-p{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;line-height:1.35}
+.xf-p.gwt{display:grid;gap:2px}
+.gwt u{text-decoration:none;font-weight:600;color:var(--accent)}
+.own{font-size:11px;font-weight:600;border-radius:4px;padding:1px 7px}
+.own.o1{background:rgba(91,141,239,.16);color:#3E69C9}.own.o2{background:rgba(242,177,56,.22);color:#9A6A07}
+.xf-m{font-size:11px;color:var(--faint)}
+.xf-g{position:relative;width:100%;height:30px}
+.xf-g i{position:absolute;height:7px;border-radius:2px;background:var(--p-must);transform-origin:left center;animation:xfb 11s infinite}
+.xf-g i:nth-child(1){top:2px}.xf-g i:nth-child(2){top:12px;background:var(--p-should);animation-delay:.12s}.xf-g i:nth-child(3){top:22px;background:var(--p-should);animation-delay:.24s}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .xf-notes{background:#2B2614;color:#E8D9A0;border-color:#4A4020;box-shadow:0 14px 30px rgba(0,0,0,.4)}:root:not([data-theme="light"]) .xf-tag{color:#CDA83A}}
+:root[data-theme="dark"] .xf-notes{background:#2B2614;color:#E8D9A0;border-color:#4A4020;box-shadow:0 14px 30px rgba(0,0,0,.4)}:root[data-theme="dark"] .xf-tag{color:#CDA83A}
+@media (max-width:980px){.hero{grid-template-columns:1fr;gap:30px;padding-block:22px 30px}}
+@media (max-width:560px){.xf{grid-template-columns:1fr}.xf-arrow{transform:rotate(90deg);height:34px;align-items:center}.xf-card{grid-template-columns:92px minmax(0,1fr)}}
 /* spotlight + tab indicator */
 .spot{position:relative}
 .spot::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),rgba(15,95,92,.13),transparent 62%)}
@@ -330,7 +351,7 @@ nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <svg class="logo" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="14" width="6" height="11" rx="2" fill="#5B8DEF"/><rect x="11" y="7" width="6" height="18" rx="2" fill="#F2B138"/><rect x="19" y="3" width="6" height="22" rx="2" fill="#2FB67C"/></svg>
+      <svg class="logo" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" style="fill:var(--accent)"/><g fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="ck k1" d="M7 9.4l1.7 1.7L12 7.8"/><path class="ck k2" d="M7 15.4l1.7 1.7 3.3-3.3"/><path class="ck k3" d="M7 21.4l1.7 1.7 3.3-3.3" opacity=".55"/><path class="ck l1" d="M15.5 9.4H21"/><path class="ck l2" d="M15.5 15.4H21"/><path class="ck l3" d="M15.5 21.4H21" opacity=".55"/></g></svg>
       <span class="wm">Brief to Backlog</span>
     </div>
     <button class="btn primary" id="btnPlanTop" hidden>Download plan</button>
@@ -338,27 +359,34 @@ nav.tabs .ind{position:absolute;bottom:0;left:0;width:0;height:3px;border-radius
 
   <section class="hero" aria-label="Introduction">
     <div class="hero-copy">
-      <p class="eyebrow">Requirements analysis · 4 outputs · Given / When / Then</p>
-      <h1>Turn messy meeting notes into a <span class="shimmer">delivery plan.</span></h1>
-      <p class="lede">Paste stakeholder notes and get a kickoff brief, clarifying questions, user stories with acceptance criteria, an owned task list and a working-day timeline.</p>
-      <div class="btns hero-cta">
+      <p class="kicker"><span class="dot"></span>AI-assisted requirements analysis</p>
+      <h1>Meeting notes in. A <span class="hl">buildable backlog</span> out.</h1>
+      <p class="lede">Paste what stakeholders said. Get a kickoff brief, the questions to ask next, user stories with acceptance criteria, an owned task list and a working-day timeline.</p>
+      <div class="hero-cta">
         <button class="btn primary" id="heroSample">Try a sample plan <span aria-hidden="true">&rarr;</span></button>
-        <button class="btn" id="heroOwn">Analyse my notes</button>
+        <button class="linkbtn" id="heroOwn">or paste your own notes &darr;</button>
       </div>
-      <div class="flow" aria-hidden="true"><span>Notes</span><i></i><span>Brief</span><i></i><span>User stories</span><i></i><span>Tasks</span><i></i><span>Timeline</span></div>
+      <ul class="proof">
+        <li>Given / When / Then acceptance criteria</li>
+        <li>Owners, effort and dependencies per task</li>
+        <li>Export to Jira CSV, checklist or HTML plan</li>
+      </ul>
     </div>
-    <div class="hero-viz spot" aria-hidden="true">
-      <div class="hv-bar"><i></i><i></i><i></i><span>delivery-plan · timeline</span></div>
-      <div class="hv-body">
-        <div class="hv-row"><em>Confirm barcode format</em><div class="hv-track"><b class="must" style="left:0%;width:20%"></b></div></div>
-        <div class="hv-row"><em>Design scanning screens</em><div class="hv-track"><b class="must" style="left:10%;width:26%"></b></div></div>
-        <div class="hv-row"><em>Build scan &amp; pick logging</em><div class="hv-track"><b class="must" style="left:30%;width:38%"></b></div></div>
-        <div class="hv-row"><em>Wrong-item alert</em><div class="hv-track"><b class="should" style="left:52%;width:22%"></b></div></div>
-        <div class="hv-row"><em>Outstanding orders report</em><div class="hv-track"><b class="should" style="left:64%;width:24%"></b></div></div>
-        <div class="hv-row"><em>Manager UAT &amp; sign-off</em><div class="hv-track"><b class="stk" style="left:84%;width:10%"></b></div></div>
-        <u class="hv-dl"></u>
+    <div class="xf" aria-hidden="true">
+      <div class="xf-notes spot">
+        <span class="xf-tag">Meeting notes</span>
+        <p class="n1">Manager says dispatch still runs off <mark>Excel</mark></p>
+        <p class="n2">wants pickers to scan barcodes on phones??</p>
+        <p class="n3">done <mark>before year-end</mark> (which one?)</p>
+        <p class="n4">courier integration &ndash; not urgent</p>
       </div>
-      <div class="hv-chip c1">5 user stories</div><div class="hv-chip c2">14 tasks</div><div class="hv-chip c3">10 days early</div>
+      <div class="xf-arrow"><i></i><i></i><i></i></div>
+      <div class="xf-out">
+        <div class="xf-card c1"><div class="xf-h"><b>Brief</b><em>4 questions</em></div><div class="xf-p">Goal, scope, assumptions and what to ask next</div></div>
+        <div class="xf-card c2"><div class="xf-h"><b>User stories</b><em>5</em></div><div class="xf-p gwt"><span><u>Given</u> order ORD-102 is open</span><span><u>When</u> I scan A123</span><span><u>Then</u> the line is marked Picked</span></div></div>
+        <div class="xf-card c3"><div class="xf-h"><b>Tasks</b><em>14</em></div><div class="xf-p"><span class="own o1">Business Analyst</span><span class="own o2">Developer</span><span class="xf-m">31 person-days</span></div></div>
+        <div class="xf-card c4"><div class="xf-h"><b>Timeline</b><em class="ok">10 days early</em></div><div class="xf-p"><div class="xf-g"><i style="left:0;width:30%"></i><i style="left:22%;width:42%"></i><i style="left:58%;width:30%"></i></div></div></div>
+      </div>
     </div>
   </section>
 
